@@ -49,3 +49,11 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+// JAR 파일의 MANIFEST.MF에 Main-Class 설정 추가
+bootJar {
+	mainClass = 'com.dragonist.goodluckynews.GoodluckynewsApplication'
+}
+
+jar {
+	enabled = false // plain-jar 작업 비활성화
+}
