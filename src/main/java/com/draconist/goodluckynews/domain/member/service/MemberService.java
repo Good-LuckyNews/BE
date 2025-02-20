@@ -5,6 +5,7 @@ import com.draconist.goodluckynews.domain.member.dto.JoinDTO;
 import com.draconist.goodluckynews.domain.member.dto.LoginRequestDTO;
 import com.draconist.goodluckynews.domain.member.entity.Member;
 import com.draconist.goodluckynews.domain.member.repository.MemberRepository;
+import com.draconist.goodluckynews.global.awss3.service.AwsS3Service;
 import com.draconist.goodluckynews.global.enums.statuscode.ErrorStatus;
 import com.draconist.goodluckynews.global.exception.GeneralException;
 import com.draconist.goodluckynews.global.jwt.util.JwtUtil;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +25,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final AwsS3Service awsS3Service;
 
     // 로그인
     @Transactional
@@ -45,7 +48,7 @@ public class MemberService {
                 .body(ApiResponse.onSuccess("Bearer " + accessToken));
     }
 
-    public ResponseEntity<?> join(JoinDTO joinDTO) {
+    public ResponseEntity<?> join(MultipartFile image, JoinDTO joinDTO) {
 
         // 동일 username 사용자 생성 방지
         if (memberRepository.existsMemberByEmail(joinDTO.getEmail())) {
@@ -54,7 +57,7 @@ public class MemberService {
         }
 
         // 새로운 회원 생성 - OAuth2 를 통한 회원가입을 수행할 경우 비밀번호는 저장하지 않아야함
-        Member member = Member.builder()
+        Member member = Member.builder()  //나중에 converter파일로 따로 관리하는 리팩터리 진행할 것
                 .email(joinDTO.getEmail())
                 .password(passwordEncoder.encode(joinDTO.getPassword()))
                 .name(joinDTO.getName())
@@ -66,6 +69,11 @@ public class MemberService {
                 .build();
 
         memberRepository.save(member);
+
+        // 이미지가 존재하는 경우에만 이미지 업로드 및 설정
+        if(image!=null && !image.isEmpty()){
+            member.changeProfileImage(awsS3Service.uploadFile(image));
+        }
 
         String accessToken = jwtUtil.createJwt(member.getEmail(), member.getRole());
         HttpHeaders headers = new HttpHeaders();

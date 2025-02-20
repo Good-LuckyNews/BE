@@ -6,10 +6,10 @@ import com.draconist.goodluckynews.domain.member.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+
 
 @RestController
 @RequestMapping("/api/member")
@@ -29,7 +29,10 @@ public class MemberController {
      * 회원 가입
      */
     @PostMapping("/join")
-    public ResponseEntity<?> join(@Valid @RequestBody JoinDTO joinDTO) {
-        return memberService.join(joinDTO);
+    public ResponseEntity<?> join(
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            @Valid @ModelAttribute JoinDTO joinDTO) throws IOException {
+
+        return memberService.join(image,joinDTO);
     }
 }
