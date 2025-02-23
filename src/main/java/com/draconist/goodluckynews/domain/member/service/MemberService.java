@@ -48,7 +48,7 @@ public class MemberService {
 
         return getJwtResponseEntity(member);
     }
-
+    //회원가입
     @Transactional
     public ResponseEntity<?> join(MultipartFile image, JoinDTO joinDTO) {
 
