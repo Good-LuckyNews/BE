@@ -1,5 +1,6 @@
 package com.draconist.goodluckynews.domain.member.entity;
 
+import com.draconist.goodluckynews.domain.member.dto.MemberInfoDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,5 +39,21 @@ public class Member {
     // 프로필 이미지 저장
     public void changeProfileImage(String profileImage) {
         this.profileImage = profileImage;
+    }
+
+    // 회원 정보 수정 메소드
+    public void changeUserInfo(MemberInfoDTO userInfoDTO) {
+        if(userInfoDTO.getName()!=null) {
+            this.name = userInfoDTO.getName();
+        }
+        if(userInfoDTO.getAmPm()!=null) {
+            this.amPm= userInfoDTO.getAmPm();
+        }
+        if(userInfoDTO.getHours()!=null) {
+            this.hours= userInfoDTO.getHours();
+        }
+        if(userInfoDTO.getMinutes()!=null) {
+            this.minutes= userInfoDTO.getMinutes();
+        }
     }
 }
