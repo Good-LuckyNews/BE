@@ -1,8 +1,13 @@
 package com.draconist.goodluckynews.domain.member.entity;
 
 import com.draconist.goodluckynews.domain.member.dto.MemberInfoDTO;
+import com.draconist.goodluckynews.domain.place.entity.Place;
+import com.draconist.goodluckynews.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -10,7 +15,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "Member")
-public class Member {
+public class Member extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="userId")
@@ -21,9 +26,7 @@ public class Member {
     private String password;
     @Column(name="name", nullable = false)
     private String name;
-    @Column(name="profileImage")
-    private String profileImage; //이미지는 또 따로 처리
-    @Column(name="ampm", nullable = false)
+    @Column(name="amPm", nullable = false)
     private String amPm;
     @Column(name="hours", nullable = false)
     private Integer hours;
@@ -31,8 +34,24 @@ public class Member {
     private Integer minutes;
     @Column(nullable = false)
     private String role; // 사용자 권한 not null이므로 기본값없이 사용
+    @Lob //이미지 TEXT 테이블에 저장
+    @Column(name="profileImage",columnDefinition = "TEXT")
 
+    private String profileImage; //이미지는 또 따로 처리
+    //====== 연관 매핑 ======//
 
+    @Builder.Default
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL)
+    private List<Place> myPlaces = new ArrayList<>();
+
+    //커뮤니티 생성
+    public void createPlace(Place place) {
+        // 1. 만든 사람 아이디를 플레이스 엔티티에 저장
+        place.changeUserId(this);
+
+        // 2. 내가 만든 커뮤니티 목록에 저장
+        this.myPlaces.add(place);
+    }
 
     //====== 편의 메소드 ======//
 

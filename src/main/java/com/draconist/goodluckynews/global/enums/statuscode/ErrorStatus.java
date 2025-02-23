@@ -28,7 +28,11 @@ public enum ErrorStatus implements BaseCode {
 	_S3_REMOVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "S35004", "S3 파일 삭제 중 오류가 발생하였습니다."),
 	// JWT Error
 	TOKEN_ERROR(HttpStatus.UNAUTHORIZED, "TOKEN4001", "토큰이 없거나 만료 되었습니다."),
-	TOKEN_NO_AUTHORIZATION(HttpStatus.UNAUTHORIZED, "TOKEN4002", "토큰에 권한이 없습니다.");
+	TOKEN_NO_AUTHORIZATION(HttpStatus.UNAUTHORIZED, "TOKEN4002", "토큰에 권한이 없습니다."),
+
+	//Place(커뮤니티) 에러
+	_PLACE_NOT_FOUND(HttpStatus.NOT_FOUND, "PLACE4001", "삭제되었거나 존재하지 않는 커뮤니티입니다."),
+	_DUPLICATE_PLACE_NAME(HttpStatus.FORBIDDEN, "PLACE4002", "해당하는 이름의 플레이스가 이미 존재합니다. 다른 이름으로 작성해주세요.");
 
 	private final HttpStatus httpStatus;
 	private final String code;
