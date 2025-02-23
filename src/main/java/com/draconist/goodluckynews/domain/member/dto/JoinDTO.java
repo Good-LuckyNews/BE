@@ -32,8 +32,8 @@ public class JoinDTO {
     @Pattern(regexp = "AM|PM", message = "'AM' 또는 'PM'만 입력 가능합니다.")
     private String amPm;
 
-    private int hours;
+    private Integer hours;
 
-    private int minutes;
+    private Integer minutes;
 }
 
