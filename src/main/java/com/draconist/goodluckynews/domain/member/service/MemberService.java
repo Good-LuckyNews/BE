@@ -1,6 +1,7 @@
 package com.draconist.goodluckynews.domain.member.service;
 
 
+import com.draconist.goodluckynews.domain.member.converter.MemberConverter;
 import com.draconist.goodluckynews.domain.member.dto.JoinDTO;
 import com.draconist.goodluckynews.domain.member.dto.LoginRequestDTO;
 import com.draconist.goodluckynews.domain.member.entity.Member;
@@ -26,6 +27,7 @@ public class MemberService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AwsS3Service awsS3Service;
+    private final MemberConverter memberConverter;
 
     // 로그인
     @Transactional
@@ -40,12 +42,7 @@ public class MemberService {
             throw new GeneralException(ErrorStatus.PASSWORD_NOT_CORRECT);
         }
 
-        String accessToken = jwtUtil.createJwt(member.getEmail(), member.getRole());
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + accessToken); // JWT 발급 성공시 Header에 삽입하여 반환
-
-        return ResponseEntity.ok().headers(headers)
-                .body(ApiResponse.onSuccess("Bearer " + accessToken));
+        return getJwtResponseEntity(member);
     }
 
     public ResponseEntity<?> join(MultipartFile image, JoinDTO joinDTO) {
@@ -56,17 +53,8 @@ public class MemberService {
                     .body(ApiResponse.onFailure(ErrorStatus._MEMBER_IS_EXISTS, "회원가입에 실패하였습니다."));
         }
 
-        // 새로운 회원 생성 - OAuth2 를 통한 회원가입을 수행할 경우 비밀번호는 저장하지 않아야함
-        Member member = Member.builder()  //나중에 converter파일로 따로 관리하는 리팩터리 진행할 것
-                .email(joinDTO.getEmail())
-                .password(passwordEncoder.encode(joinDTO.getPassword()))
-                .name(joinDTO.getName())
-                .profileImage(joinDTO.getProfileImage())
-                .amPm(joinDTO.getAmPm())
-                .hours(joinDTO.getHours())
-                .minutes(joinDTO.getMinutes())
-                .role("ROLE_USER")
-                .build();
+        // `MemberConverter`를 사용하여 `Member` 객체 생성
+        Member member = memberConverter.toMember(joinDTO);
 
         memberRepository.save(member);
 
@@ -75,6 +63,11 @@ public class MemberService {
             member.changeProfileImage(awsS3Service.uploadFile(image));
         }
 
+        return getJwtResponseEntity(member);
+    }
+
+    // 회원 가입 & 로그인 성공시 JWT 생성 후 반환
+    public ResponseEntity<?> getJwtResponseEntity(Member member) {
         String accessToken = jwtUtil.createJwt(member.getEmail(), member.getRole());
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
