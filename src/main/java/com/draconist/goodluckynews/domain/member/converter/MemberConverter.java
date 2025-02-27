@@ -21,6 +21,7 @@ public class MemberConverter {
                 .amPm(joinDTO.getAmPm())
                 .hours(joinDTO.getHours())
                 .minutes(joinDTO.getMinutes())
+                .keywords(joinDTO.getKeywords())
                 .role("ROLE_USER")
                 .build();
     }
@@ -31,6 +32,7 @@ public class MemberConverter {
                 .amPm(member.getAmPm())
                 .hours(member.getHours())
                 .minutes(member.getMinutes())
+                .keywords(member.getKeywords())
                 .build();
     }
 }

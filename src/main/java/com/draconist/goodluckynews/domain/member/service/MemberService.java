@@ -13,6 +13,7 @@ import com.draconist.goodluckynews.global.exception.GeneralException;
 import com.draconist.goodluckynews.global.jwt.util.JwtUtil;
 import com.draconist.goodluckynews.global.response.ApiResponse;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberService {
@@ -89,18 +91,37 @@ public class MemberService {
 
     @Transactional
     public ResponseEntity<?> edit(MultipartFile image, @Valid MemberInfoDTO memberInfoDTO, String email) throws IOException {
-        //1. 회원이 존재하는 지 확인
-        Member member = memberRepository.findMemberByEmail(email).orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        //2. 이미지 수정 시도시, aws에서 이미지 삭제
-        awsS3Service.deleteFileByUrl(member.getProfileImage());
-        //3. 회원정보 수정
+        // 1. 회원이 존재하는지 확인
+        log.info("회원 정보 수정 요청: {}", email); // 로그 추가
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new RuntimeException("회원 없음"));
+
+        // 2. 이미지 수정 시도 시, AWS에서 이미지 삭제
+        if (member.getProfileImage() != null) {
+            try {
+                awsS3Service.deleteFileByUrl(member.getProfileImage());
+                log.info("이미지 삭제 성공"); // 로그 추가
+            } catch (Exception e) {
+                throw new RuntimeException("이미지 삭제 실패");
+            }
+        }
+
+        // 3. 회원 정보 수정
         member.changeUserInfo(memberInfoDTO);
-        //4. 이미지 수정 시도시, 데베에 이미지 삭제
-        if(image!=null && !image.isEmpty()){
-            member.changeProfileImage(awsS3Service.uploadFile(image));
-        }else{
+
+        // 4. 이미지 수정 시도 시, 데베에 이미지 삭제
+        if (image != null && !image.isEmpty()) {
+            try {
+                String newProfileImage = awsS3Service.uploadFile(image);
+                member.changeProfileImage(newProfileImage);
+            } catch (Exception e) {
+                member.changeProfileImage(null); // 실패 시 null로 설정
+            }
+        } else {
             member.changeProfileImage(null);
         }
-        return ResponseEntity.ok(ApiResponse.onSuccess("회원정보가 수정되었습니다."));
+        memberRepository.save(member);
+
+        return ResponseEntity.ok("회원정보가 수정되었습니다.");
     }
 }
