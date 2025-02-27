@@ -62,7 +62,7 @@ jobs:
             sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO_NAME }}:latest
             sudo docker stop $(sudo docker ps -a -q)
-            sudo docker run -d --log-driver=syslog -p 8080:8080 -e TZ=Asia/Seoul -e SPRING_PROFILES_ACTIVE= ${{ secrets.DOCKER_USERNAME }}/`docker_username`:latest
+            sudo docker run -d --log-driver=syslog -p 8080:8080 -e TZ=Asia/Seoul -e SPRING_PROFILES_ACTIVE= ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO_NAME }}:latest
             sudo docker rm $(sudo docker ps --filter 'status=exited' -a -q)
             sudo docker image prune -a -f
 
