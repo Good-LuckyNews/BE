@@ -53,5 +53,4 @@ public class MemberController {
        ) throws IOException {
         return memberService.edit(image, memberInfoDTO, customUserDetails.getEmail());
     }
-    //테스트
 }
