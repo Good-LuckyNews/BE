@@ -35,5 +35,6 @@ public class JoinDTO {
     private Integer hours;
 
     private Integer minutes;
+    private String keywords;
 }
 

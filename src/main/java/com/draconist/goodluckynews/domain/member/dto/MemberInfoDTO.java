@@ -12,4 +12,5 @@ public class MemberInfoDTO {
     private String amPm;
     private Integer hours;
     private Integer minutes;
+    private String keywords;
 }
