@@ -36,8 +36,13 @@ public class Member extends BaseEntity {
     private String role; // 사용자 권한 not null이므로 기본값없이 사용
     @Lob //이미지 TEXT 테이블에 저장
     @Column(name="profileImage",columnDefinition = "TEXT")
-
     private String profileImage; //이미지는 또 따로 처리
+
+    @Column(name="keywords")
+    private String keywords;
+
+
+
     //====== 연관 매핑 ======//
 
     @Builder.Default
@@ -73,6 +78,9 @@ public class Member extends BaseEntity {
         }
         if(userInfoDTO.getMinutes()!=null) {
             this.minutes= userInfoDTO.getMinutes();
+        }
+        if(userInfoDTO.getKeywords() != null) {  // keywords 업데이트
+            this.keywords = userInfoDTO.getKeywords();
         }
     }
 }
