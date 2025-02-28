@@ -38,7 +38,7 @@ public enum ErrorStatus implements BaseCode {
 	_ARTICLE_TITLE_MISSING(HttpStatus.BAD_REQUEST, "ARTICLE4001", "제목을 입력해 주세요."),
 	_ARTICLE_CONTENT_MISSING(HttpStatus.BAD_REQUEST, "ARTICLE4002", "내용을 입력해 주세요."),
 	_NOT_OWNER_OF_ARTICLE(HttpStatus.FORBIDDEN, "ARTICLE4031", "해당 추억(게시글)의 주인이 아닙니다."),
-	_ARTICLE_NOT_FOUND(HttpStatus.NOT_FOUND, "ARTICLE4041", "해당 추억을 찾을 수 없습니다."),
+	_ARTICLE_NOT_FOUND(HttpStatus.NOT_FOUND, "ARTICLE4041", "해당 기사를 찾을 수 없습니다."),
 
 	_CRAWLFAILED(HttpStatus.BAD_REQUEST, "MEMBER4001", "크롤링이 불가능");
 

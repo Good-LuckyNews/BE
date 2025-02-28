@@ -200,4 +200,15 @@ public class ArticleController {
         return articleService.getAllShortArticles(member.getId(), page, size);
     }
 
+    //상세보기
+    @GetMapping("/article/{articleId}")
+    public ResponseEntity<?> getArticleDetail(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+         @PathVariable Long articleId) {
+        // 1. 이메일로 회원 id 찾기
+        Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return articleService.getArticleDetail(member.getId(),articleId);
+    }
+
 }

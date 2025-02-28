@@ -20,6 +20,4 @@ public class ArticleListDto {
     private String image; // 뉴스 이미지 하나
     private String keywords;
     private Long userId;
-
-
 }
