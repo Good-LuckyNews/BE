@@ -1,7 +1,4 @@
 package com.draconist.goodluckynews.domain.article.dto;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Lob;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
