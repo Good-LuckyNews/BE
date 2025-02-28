@@ -174,7 +174,7 @@ public class ArticleController {
         }
     }
 
-    // 모든 기사 조회
+    // 유저에 등록된 기사 조회
     @GetMapping("/user")
     public ResponseEntity<?> getAllArticles(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                             @RequestParam(value = "page", defaultValue = "0") int page,
