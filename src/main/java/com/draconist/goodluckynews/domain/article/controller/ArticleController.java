@@ -187,4 +187,17 @@ public class ArticleController {
 
         return articleService.getUserArticles(member.getId(), page, size);
     }
+
+    // 전체 기사 미리보기
+    @GetMapping("/article")
+    public ResponseEntity<?> getAllShortArticles(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                            @RequestParam(value = "page", defaultValue = "0") int page,
+                                            @RequestParam(value = "size", defaultValue = "3") int size) {
+        // 1. 이메일로 회원 id 찾기
+        Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return articleService.getAllShortArticles(member.getId(), page, size);
+    }
+
 }

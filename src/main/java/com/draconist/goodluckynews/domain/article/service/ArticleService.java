@@ -1,6 +1,7 @@
 package com.draconist.goodluckynews.domain.article.service;
 import com.draconist.goodluckynews.domain.article.dto.ArticleDto;
 import com.draconist.goodluckynews.domain.article.dto.ArticleListDto;
+import com.draconist.goodluckynews.domain.article.dto.ArticleZipListDto;
 import com.draconist.goodluckynews.domain.article.entity.ArticleEntity;
 import com.draconist.goodluckynews.domain.article.repository.ArticleRepository;
 import com.draconist.goodluckynews.domain.member.entity.Member;
@@ -90,7 +91,25 @@ public class ArticleService {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.onSuccess(responseDtos));
     }
-
+    @Transactional
+    public ResponseEntity<?> getAllShortArticles(Long userId, int page, int size) {
+        // 404 : 토큰에 해당하는 회원이 실제로 존재하는지 확인
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+        // 페이지 처리
+        PageRequest pageRequest = PageRequest.of(page, size); // page, size 설정
+        // DB 검색 - 나의 게시글 조회(최신순)
+        Page<ArticleEntity> articlePage = articleRepository.findAll(pageRequest);
+        // 게시글 정보 빌드 (response.result)
+        List<ArticleZipListDto> responseDtos = new ArrayList<>();
+        for (ArticleEntity article : articlePage.getContent()) {
+            ArticleZipListDto responseDto = buildArticleZipListResponse(article);
+            responseDtos.add(responseDto);
+        }
+        // 응답 반환
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.onSuccess(responseDtos));
+    }
 
 
     //빌드 편의 메소드 converter
@@ -107,6 +126,16 @@ public class ArticleService {
                 .image(article.getImage())  // 이미지 URL을 하나로 매핑
                 .keywords(article.getKeywords())  // 키워드 매핑
                 .userId(article.getUserId())  // 작성자 ID
+                .build();
+    }
+    private ArticleZipListDto buildArticleZipListResponse(ArticleEntity article) {
+        // ArticleListDto 빌드
+        return ArticleZipListDto.builder()
+                .id(article.getId())  // ArticleEntity의 id를 ArticleListDto로 매핑
+                .title(article.getTitle())  // Title 매핑
+                .content(article.getContent())  // Content 매핑
+                .image(article.getImage())  // 이미지 URL을 하나로 매핑
+                .keywords(article.getKeywords())  // 키워드 매핑
                 .build();
     }
 
