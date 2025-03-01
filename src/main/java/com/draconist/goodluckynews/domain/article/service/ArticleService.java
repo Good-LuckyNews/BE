@@ -14,6 +14,7 @@ import com.draconist.goodluckynews.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -156,6 +158,29 @@ public class ArticleService {
                 .body(ApiResponse.onSuccess(responseDtos));
     }
 
+
+    //검색 메소드
+    public ResponseEntity<?> getSearchedArticles(Long userId, String searchQuery, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ArticleEntity> articlePage = articleRepository.searchArticles(searchQuery, pageable);
+
+        // ArticleZipListDto로 변환
+        List<ArticleZipListDto> responseDtos = articlePage.stream()
+                .map(article -> ArticleZipListDto.builder()
+                        .id(article.getId())
+                        .title(article.getTitle())
+                        .content(article.getContent())
+                        .image(article.getImage())
+                        .keywords(article.getKeywords())
+                        .createdAt(article.getCreatedAt())
+                        .likeCount(article.getLikeCount())
+                        .build())
+                .collect(Collectors.toList());
+
+        // 응답 반환
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.onSuccess(responseDtos));
+    }
 
     //빌드 편의 메소드 converter
     private ArticleListDto buildArticleListResponse(ArticleEntity article, Long userId) {

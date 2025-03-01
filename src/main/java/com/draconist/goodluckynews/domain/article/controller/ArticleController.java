@@ -3,6 +3,7 @@ package com.draconist.goodluckynews.domain.article.controller;
 import com.draconist.goodluckynews.domain.article.dto.ArticleDto;
 import com.draconist.goodluckynews.domain.article.dto.CompletedDegreeDto;
 import com.draconist.goodluckynews.domain.article.dto.HeartDto;
+import com.draconist.goodluckynews.domain.article.dto.SearchArticleDto;
 import com.draconist.goodluckynews.domain.article.entity.ArticleEntity;
 import com.draconist.goodluckynews.domain.article.service.ArticleService;
 import com.draconist.goodluckynews.domain.article.service.CompletedTimeService;
@@ -265,16 +266,60 @@ public class ArticleController {
         return completedTimeService.WriteTime(articleId,member.getId(), completedDegreeDto);
     }
 
-    //완료한 시간 수정하기
-    @PutMapping("/article/{articleId}/completed")
-    public ResponseEntity<?> UpdateTime(@AuthenticationPrincipal CustomUserDetails customUserDetails,@PathVariable Long articleId,
-                                       @Valid @RequestBody CompletedDegreeDto completedDegreeDto) {
-
+    //일주일간 완료한 기사 개수 가져오기
+    @GetMapping("/user/articles/completed/week")
+    public ResponseEntity<?> getCompletedTimesThisWeek(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         // 1. 이메일로 회원 id 찾기
         Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
-        return completedTimeService.UpdateTime(articleId,member.getId(), completedDegreeDto);
+        return completedTimeService.getCompletedTimesThisWeek(member.getId());
     }
+    //지난달 완료한 기사 개수 가져오기
+    @GetMapping("/user/articles/completed/month")
+    public ResponseEntity<?> getCompletedTimesLastMonth(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        // 1. 이메일로 회원 id 찾기
+        Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return completedTimeService.getCompletedTimesLastMonth(member.getId());
+    }
+
+    //지난6개월 완료한 기사 개수 가져오기
+    @GetMapping("/user/articles/completed/sixmonth")
+    public ResponseEntity<?> getCompletedTimesLastSixMonth(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        // 1. 이메일로 회원 id 찾기
+        Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return completedTimeService.getCompletedTimesLastSixMonth(member.getId());
+    }
+
+    //전체 완료한 기사 개수 가져오기
+    @GetMapping("/user/articles/completed/alldays")
+    public ResponseEntity<?> getCompletedTimesAll(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        // 1. 이메일로 회원 id 찾기
+        Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return completedTimeService.getCompletedTimesAll(member.getId());
+    }
+
+    //기사 검색
+    @PostMapping("/article/search")
+    public ResponseEntity<?> searchArticle(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @Valid @RequestBody SearchArticleDto searchArticleDto,
+            @RequestParam(value = "page", defaultValue = "0") int page,  // 디폴트 값 : 0
+            @RequestParam(value = "size", defaultValue = "5") int size) { // 디폴트 값 : 5
+
+        String searchQuery = searchArticleDto.getSearchQuery();
+
+        // 1. 이메일로 회원 id 찾기
+        Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+        return articleService.getSearchedArticles(member.getId(),searchQuery, page, size);
+    }
+
 
 }

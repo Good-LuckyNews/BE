@@ -29,7 +29,7 @@ import static jakarta.persistence.FetchType.LAZY;
         @JoinColumn(name = "articleId")
         private ArticleEntity article;
 
-        @Column(name = "completedTime")
+        @Column(name = "completedAt")
         private LocalDateTime completedAt;
 
         public CompletedTime(Member member, ArticleEntity article, LocalDateTime completedAt) {
