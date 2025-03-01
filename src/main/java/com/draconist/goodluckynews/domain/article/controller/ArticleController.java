@@ -1,8 +1,10 @@
 package com.draconist.goodluckynews.domain.article.controller;
 
 import com.draconist.goodluckynews.domain.article.dto.ArticleDto;
+import com.draconist.goodluckynews.domain.article.dto.HeartDto;
 import com.draconist.goodluckynews.domain.article.entity.ArticleEntity;
 import com.draconist.goodluckynews.domain.article.service.ArticleService;
+import com.draconist.goodluckynews.domain.article.service.HeartService;
 import com.draconist.goodluckynews.domain.member.entity.Member;
 import com.draconist.goodluckynews.domain.member.repository.MemberRepository;
 import com.draconist.goodluckynews.global.enums.statuscode.ErrorStatus;
@@ -11,6 +13,7 @@ import com.draconist.goodluckynews.global.jwt.dto.CustomUserDetails;
 import com.draconist.goodluckynews.global.response.ApiResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +42,7 @@ public class ArticleController {
     private String clientSecret;
     private final MemberRepository memberRepository;
     private final ArticleService articleService;
+    private final HeartService heartService;
 
     @GetMapping("/fetch-news")
     public ResponseEntity<ApiResponse<String>> fetchAndSaveNews(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -209,6 +213,27 @@ public class ArticleController {
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         return articleService.getArticleDetail(member.getId(),articleId);
+    }
+
+    // 좋아요 추가
+    @PostMapping("/article/{articleId}/like")
+    public ResponseEntity<?> insert(@AuthenticationPrincipal CustomUserDetails customUserDetails,@PathVariable Long articleId) {
+
+        // 1. 이메일로 회원 id 찾기
+        Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return heartService.insert(articleId,member.getId());
+    }
+
+    // 좋아요 취소
+    @DeleteMapping("/article/{articleId}/like")
+    public ResponseEntity<?> delete(@AuthenticationPrincipal CustomUserDetails customUserDetails,@PathVariable Long articleId) {
+
+        // 1. 이메일로 회원 id 찾기
+        Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+        return heartService.delete(articleId,member.getId());
     }
 
 }

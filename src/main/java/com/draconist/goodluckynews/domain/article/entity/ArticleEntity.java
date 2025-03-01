@@ -3,6 +3,7 @@ package com.draconist.goodluckynews.domain.article.entity;
 import com.draconist.goodluckynews.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
@@ -44,4 +45,24 @@ public class ArticleEntity extends BaseEntity {
     //userId에서 가져와 엔티티화
     @Column(name="keywords")
     private String keywords;
+
+    @ColumnDefault("0")
+    @Column(name = "likeCount")
+    private Integer likeCount;
+
+    public void updateLikeCount(boolean increase) {
+        if (increase) {
+            this.likeCount++;
+        } else {
+            this.likeCount--;
+        }
+    }
+    // @PrePersist 메서드 추가 기사 저장시 좋아요 저장안하면 null->0으로
+    @PrePersist
+    public void prePersist() {
+        if (this.likeCount == null) {
+            this.likeCount = 0;
+        }
+    }
+
 }

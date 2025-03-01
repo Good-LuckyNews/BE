@@ -29,6 +29,6 @@ public class ArticleLongContentDto {
     private Integer degree;
     //완료버튼 누른 시간
     private LocalDateTime completedTime;
-
+    private Integer likeCount;
 
 }
