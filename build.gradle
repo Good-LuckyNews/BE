@@ -49,6 +49,9 @@ dependencies {
 	//mariadb설정
 	implementation 'org.mariadb.jdbc:mariadb-java-client:3.3.3'
 
+	//jsoup 설정
+	implementation 'org.jsoup:jsoup:1.16.2'
+
 }
 
 
