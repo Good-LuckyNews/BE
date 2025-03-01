@@ -65,4 +65,14 @@ public class ArticleEntity extends BaseEntity {
         }
     }
 
+    //완료시간 기록
+    public void updateCompletedTime(LocalDateTime completedNowTime) {
+        this.completedTime = completedNowTime;
+    }
+
+    //긍정도 기록
+    public void updateDegree(Integer degree) {
+        this.degree = degree;
+    }
+
 }

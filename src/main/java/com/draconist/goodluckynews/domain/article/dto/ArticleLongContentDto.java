@@ -1,5 +1,6 @@
 package com.draconist.goodluckynews.domain.article.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
@@ -23,11 +24,9 @@ public class ArticleLongContentDto {
     private String image; // 뉴스 이미지 하나
     @NotNull
     private String keywords;
-    //생성시간
-    private LocalDateTime createdAt;
-
     private Integer degree;
     //완료버튼 누른 시간
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime completedTime;
     private Integer likeCount;
 

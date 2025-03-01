@@ -1,6 +1,7 @@
 package com.draconist.goodluckynews.domain.article.entity;
 
 import com.draconist.goodluckynews.domain.member.entity.Member;
+import com.draconist.goodluckynews.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +13,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Heart {
+public class Heart extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "heartId")
