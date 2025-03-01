@@ -40,7 +40,10 @@ public enum ErrorStatus implements BaseCode {
 	_NOT_OWNER_OF_ARTICLE(HttpStatus.FORBIDDEN, "ARTICLE4031", "해당 추억(게시글)의 주인이 아닙니다."),
 	_ARTICLE_NOT_FOUND(HttpStatus.NOT_FOUND, "ARTICLE4041", "해당 기사를 찾을 수 없습니다."),
 
-	_CRAWLFAILED(HttpStatus.BAD_REQUEST, "MEMBER4001", "크롤링이 불가능");
+	_CRAWLFAILED(HttpStatus.BAD_REQUEST, "MEMBER4001", "크롤링이 불가능"),
+	//좋아요 에러
+	_HEART_NOT_FOUND(HttpStatus.NOT_FOUND, "ARTICLE4041", "해당 좋아요 테이블을 찾을 수 없습니다."),
+	_ALREADY_HEARTED(HttpStatus.FORBIDDEN, "PLACE4002", "이미 좋아요한 게시글입니다");
 
 	private final HttpStatus httpStatus;
 	private final String code;

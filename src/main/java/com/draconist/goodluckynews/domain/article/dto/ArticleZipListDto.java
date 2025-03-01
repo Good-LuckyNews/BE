@@ -21,4 +21,5 @@ public class ArticleZipListDto {
         private String image;
         private String keywords;
         private LocalDateTime createdAt;
+        private Integer likeCount;
 }

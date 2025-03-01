@@ -155,6 +155,7 @@ public class ArticleService {
                 .content(article.getContent())  // Content 매핑
                 .image(article.getImage())  // 이미지 URL을 하나로 매핑
                 .keywords(article.getKeywords())  // 키워드 매핑
+                .likeCount(article.getLikeCount())
                 .build();
     }
 
@@ -168,6 +169,7 @@ public class ArticleService {
                 .keywords(article.getKeywords())
                 .createdAt(article.getCreatedAt())
                 .degree(article.getDegree())
+                .likeCount(article.getLikeCount())
                 .build();
     }
 
