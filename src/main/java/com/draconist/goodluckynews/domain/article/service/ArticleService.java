@@ -5,6 +5,7 @@ import com.draconist.goodluckynews.domain.article.dto.ArticleLongContentDto;
 import com.draconist.goodluckynews.domain.article.dto.ArticleZipListDto;
 import com.draconist.goodluckynews.domain.article.entity.ArticleEntity;
 import com.draconist.goodluckynews.domain.article.repository.ArticleRepository;
+import com.draconist.goodluckynews.domain.article.repository.HeartRepository;
 import com.draconist.goodluckynews.domain.member.entity.Member;
 import com.draconist.goodluckynews.domain.member.repository.MemberRepository;
 import com.draconist.goodluckynews.global.enums.statuscode.ErrorStatus;
@@ -26,6 +27,7 @@ import java.util.List;
 public class ArticleService {
     private final MemberRepository memberRepository;
     private final ArticleRepository articleRepository;
+    private final HeartRepository heartRepository;
 
     @Transactional
     public ResponseEntity<?> saveArticles(Long userId, List<ArticleDto> articleDtos) {
@@ -131,6 +133,30 @@ public class ArticleService {
 
     }
 
+    //북마크한 기사 모아보기
+    public ResponseEntity<?> getUserLikeArticles(Long userId, int page, int size) {
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        // 페이지 처리 (최신순 정렬)
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")); // createdAt 기준 내림차순 정렬
+
+        // DB에서 북마크한 기사 조회
+        Page<ArticleEntity> likedArticlesPage = heartRepository.findAllLikedArticlesByUserId(userId, pageRequest);
+
+        // 게시글 정보 빌드 (response.result)
+        List<ArticleZipListDto> responseDtos = new ArrayList<>();
+        for (ArticleEntity article : likedArticlesPage.getContent()) {
+            ArticleZipListDto responseDto = buildArticleZipListResponse(article);
+            responseDtos.add(responseDto);
+        }
+
+        // 응답 반환
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.onSuccess(responseDtos));
+    }
+
+
     //빌드 편의 메소드 converter
     private ArticleListDto buildArticleListResponse(ArticleEntity article, Long userId) {
         // ArticleListDto 빌드
@@ -167,7 +193,7 @@ public class ArticleService {
                 .originalLink(article.getOriginalLink())
                 .image(article.getImage())
                 .keywords(article.getKeywords())
-                .createdAt(article.getCreatedAt())
+                .completedTime(article.getCompletedTime())
                 .degree(article.getDegree())
                 .likeCount(article.getLikeCount())
                 .build();

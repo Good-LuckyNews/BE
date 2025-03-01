@@ -4,22 +4,17 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
+@Getter
+@Setter
 @Builder
-public class ArticleListDto {
-    private Long id;
-    private String title;
-    private String content;
+public class CompletedDegreeDto {
     private Integer degree;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime completedTime;
-    private String originalLink;
-    private String longContent;
-    private String image; // 뉴스 이미지 하나
-    private String keywords;
-    private Long userId;
 }

@@ -1,9 +1,11 @@
 package com.draconist.goodluckynews.domain.article.controller;
 
 import com.draconist.goodluckynews.domain.article.dto.ArticleDto;
+import com.draconist.goodluckynews.domain.article.dto.CompletedDegreeDto;
 import com.draconist.goodluckynews.domain.article.dto.HeartDto;
 import com.draconist.goodluckynews.domain.article.entity.ArticleEntity;
 import com.draconist.goodluckynews.domain.article.service.ArticleService;
+import com.draconist.goodluckynews.domain.article.service.CompletedTimeService;
 import com.draconist.goodluckynews.domain.article.service.HeartService;
 import com.draconist.goodluckynews.domain.member.entity.Member;
 import com.draconist.goodluckynews.domain.member.repository.MemberRepository;
@@ -43,6 +45,7 @@ public class ArticleController {
     private final MemberRepository memberRepository;
     private final ArticleService articleService;
     private final HeartService heartService;
+    private final CompletedTimeService completedTimeService;
 
     @GetMapping("/fetch-news")
     public ResponseEntity<ApiResponse<String>> fetchAndSaveNews(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -215,7 +218,8 @@ public class ArticleController {
         return articleService.getArticleDetail(member.getId(),articleId);
     }
 
-    // 좋아요 추가
+    //
+    // 북마크 추가
     @PostMapping("/article/{articleId}/like")
     public ResponseEntity<?> insert(@AuthenticationPrincipal CustomUserDetails customUserDetails,@PathVariable Long articleId) {
 
@@ -226,7 +230,7 @@ public class ArticleController {
         return heartService.insert(articleId,member.getId());
     }
 
-    // 좋아요 취소
+    // 북마크 취소
     @DeleteMapping("/article/{articleId}/like")
     public ResponseEntity<?> delete(@AuthenticationPrincipal CustomUserDetails customUserDetails,@PathVariable Long articleId) {
 
@@ -234,6 +238,43 @@ public class ArticleController {
         Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
         return heartService.delete(articleId,member.getId());
+    }
+
+    //사용자가 북마크한 기사 가져오기
+    @GetMapping("/user/article/likes")
+    public ResponseEntity<?> getUserLikeArticles(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                            @RequestParam(value = "page", defaultValue = "0") int page,
+                                            @RequestParam(value = "size", defaultValue = "3") int size) {
+        // 1. 이메일로 회원 id 찾기
+        Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        log.info("회원 ID: {}, 페이지: {}, 사이즈: {}", member.getId(), page, size);
+
+        return articleService.getUserLikeArticles(member.getId(), page, size);
+    }
+    //완료한 시간 기록하기
+    @PostMapping("/article/{articleId}/completed/")
+    public ResponseEntity<?> WriteTime(@AuthenticationPrincipal CustomUserDetails customUserDetails,@PathVariable Long articleId,
+                                       @Valid @RequestBody CompletedDegreeDto completedDegreeDto) {
+
+        // 1. 이메일로 회원 id 찾기
+        Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return completedTimeService.WriteTime(articleId,member.getId(), completedDegreeDto);
+    }
+
+    //완료한 시간 수정하기
+    @PutMapping("/article/{articleId}/completed")
+    public ResponseEntity<?> UpdateTime(@AuthenticationPrincipal CustomUserDetails customUserDetails,@PathVariable Long articleId,
+                                       @Valid @RequestBody CompletedDegreeDto completedDegreeDto) {
+
+        // 1. 이메일로 회원 id 찾기
+        Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return completedTimeService.UpdateTime(articleId,member.getId(), completedDegreeDto);
     }
 
 }
