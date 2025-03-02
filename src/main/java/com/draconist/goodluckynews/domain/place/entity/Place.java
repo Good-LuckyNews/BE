@@ -29,4 +29,12 @@ public class Place extends BaseEntity {
     public void changeUserId(Member member) {
         this.userId = member.getId();
     }
+    // ✅ 플레이스 정보 수정 메서드 추가
+    public void updatePlace(String placeName, String placeDetails, String placeImg) {
+        this.placeName = placeName;
+        this.placeDetails = placeDetails;
+        if (placeImg != null) { // 이미지가 새로 제공된 경우만 업데이트
+            this.placeImg = placeImg;
+        }
+    }
 }
