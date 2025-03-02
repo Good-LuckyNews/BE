@@ -183,17 +183,13 @@ public class ArticleController {
     }
 
     // 유저에 등록된 기사 조회
-    @GetMapping("/user")
-    public ResponseEntity<?> getAllArticles(@AuthenticationPrincipal CustomUserDetails customUserDetails,
-                                            @RequestParam(value = "page", defaultValue = "0") int page,
-                                            @RequestParam(value = "size", defaultValue = "3") int size) {
+    @GetMapping("/article/user")
+    public ResponseEntity<?> getAllArticles(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         // 1. 이메일로 회원 id 찾기
         Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
-        log.info("회원 ID: {}, 페이지: {}, 사이즈: {}", member.getId(), page, size);
-
-        return articleService.getUserArticles(member.getId(), page, size);
+        return articleService.getUserArticles(member.getId());
     }
 
     // 전체 기사 미리보기
