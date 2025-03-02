@@ -73,30 +73,28 @@ public class ArticleService {
         return ResponseEntity.status(201).body(ApiResponse.onSuccess("기사들이 생성되었습니다."));
     }
 
-    //사용자가 만든 기사 확인
+    //사용자가 만든 기사 확인, 랜덤으로 하나 가져오기
     @Transactional
-    public ResponseEntity<?> getUserArticles(Long userId, int page, int size) {
+    public ResponseEntity<?> getUserArticles(Long userId) {
         // 404 : 토큰에 해당하는 회원이 실제로 존재하는지 확인
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
-        // 페이지 처리 (최신순 정렬)
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")); // id 기준 내림차순 정렬
-
-        // DB 검색 - 나의 게시글 조회(최신순)
-        Page<ArticleEntity> articlePage = articleRepository.findAllByUserId(member.getId(), pageRequest);
-
-        // 게시글 정보 빌드 (response.result)
-        List<ArticleListDto> responseDtos = new ArrayList<>();
-        for (ArticleEntity article : articlePage.getContent()) {
-            ArticleListDto responseDto = buildArticleListResponse(article, userId);
-            responseDtos.add(responseDto);
+        // 랜덤으로 게시글 하나 가져오기
+        ArticleEntity randomArticle = articleRepository.findRandomArticleByUserId(userId);
+        if (randomArticle == null) {
+            return ResponseEntity.status(400)
+                    .body(ApiResponse.onFailure(ErrorStatus._ARTICLE_NOT_FOUND, null));
         }
+
+        // 랜덤 게시글 정보 빌드 (response.result)
+        ArticleListDto randomArticleDto = buildArticleListResponse(randomArticle, userId);
 
         // 응답 반환
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.onSuccess(responseDtos));
+                .body(ApiResponse.onSuccess(randomArticleDto));
     }
+
 
     //전체 기사 미리보기
     @Transactional
