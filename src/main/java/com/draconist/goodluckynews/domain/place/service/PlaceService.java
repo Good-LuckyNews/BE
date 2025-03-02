@@ -141,6 +141,7 @@ public class PlaceService {
     }//특정 플레이스 상세 조회
 
 
+
     public ResponseEntity<?> updatePlace(Long placeId, MultipartFile image, PlaceDTO placeDTO, String email) throws IOException {
         // 1. 이메일로 회원 정보 찾기
         Member member = memberRepository.findMemberByEmail(email)
