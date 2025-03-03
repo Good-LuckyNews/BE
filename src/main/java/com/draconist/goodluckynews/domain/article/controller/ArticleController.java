@@ -31,6 +31,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -100,12 +101,16 @@ public class ArticleController {
                         .map(item -> {
                             String originalLink = (String) item.get("originallink");
                             NewsScraper.ArticleContent articleContent = NewsScraper.fetchArticleContent(originalLink);
+                            // pubDate를 가져와서 LocalDateTime으로 변환합니다.
+                            String pubDate = (String) item.get("pubDate");
+                            LocalDateTime originalDate = LocalDateTime.parse(pubDate, formatter);
                             return ArticleDto.builder()
                                     .title((String) item.get("title"))
                                     .originalLink((String) item.get("originallink"))
                                     .longContent(articleContent.longContent)
                                     .image(articleContent.image)
                                     .content((String) item.get("description"))
+                                    .originalDate(originalDate)
                                     .keywords(keyword)  // 각 뉴스에 키워드 추가
                                     .createdAt(LocalDateTime.now())  // 현재 시간으로 설정
                                     .build();
@@ -317,5 +322,7 @@ public class ArticleController {
         return articleService.getSearchedArticles(member.getId(),searchQuery, page, size);
     }
 
+    // 날짜 형식을 맞추기 위한 포맷터를 정의합니다.
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH);
 
 }
