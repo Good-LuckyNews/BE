@@ -59,10 +59,14 @@ public class PlaceController {
                 .build();
 
         return placeService.updatePlace(placeId, image, placeDTO, customUserDetails.getEmail());
-    }
-
-//특정 플레이스 수정
+    }//특정 플레이스 수정
 
 
+    @PostMapping("/{placeId}/bookmark")
+    public ResponseEntity<?> toggleBookmark(
+        @PathVariable Long placeId,
+        @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    return placeService.toggleBookmark(placeId, customUserDetails.getEmail());
+    }//플레이스 북마크
 
 }

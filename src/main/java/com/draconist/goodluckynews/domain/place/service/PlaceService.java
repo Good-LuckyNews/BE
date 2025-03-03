@@ -182,8 +182,23 @@ public class PlaceService {
     }
 //플레이스 수정
 
+    public ResponseEntity<?> toggleBookmark(Long placeId, String email) {
+        // 1. 회원 찾기
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
+        // 2. 플레이스 찾기
+        Place place = placeRepository.findById(placeId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.PLACE_NOT_FOUND));
 
+        // 3. 북마크 상태 변경 (토글)
+        place.toggleBookmark();
+        placeRepository.save(place);
 
+        // 4. 응답 반환
+        String message = place.isBookmarked() ? "북마크 추가 완료" : "북마크 삭제 완료";
+        return ResponseEntity.status(SuccessStatus._BOOKMARK_UPDATED.getHttpStatus())
+                .body(ApiResponse.onSuccess(SuccessStatus._BOOKMARK_UPDATED.getMessage(), message));
+    }//플레이스 북마크
 
 }
