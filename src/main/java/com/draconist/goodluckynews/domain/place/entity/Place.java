@@ -26,9 +26,17 @@ public class Place extends BaseEntity {
     @Column(name="placeImg",columnDefinition = "TEXT")
     private String placeImg;
 
+
+    // ✅ 북마크 상태 저장 (true: 북마크됨, false: 북마크 안됨)
+    @Column(name = "isBookmarked", nullable = false)
+    private boolean isBookmarked = false;
+
+
     public void changeUserId(Member member) {
         this.userId = member.getId();
     }
+
+
     // ✅ 플레이스 정보 수정 메서드 추가
     public void updatePlace(String placeName, String placeDetails, String placeImg) {
         this.placeName = placeName;
@@ -36,5 +44,11 @@ public class Place extends BaseEntity {
         if (placeImg != null) { // 이미지가 새로 제공된 경우만 업데이트
             this.placeImg = placeImg;
         }
+    }
+
+
+    // ✅ 북마크 토글 기능 추가
+    public void toggleBookmark() {
+        this.isBookmarked = !this.isBookmarked;
     }
 }
