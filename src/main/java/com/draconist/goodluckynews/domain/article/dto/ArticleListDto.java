@@ -22,4 +22,6 @@ public class ArticleListDto {
     private String image; // 뉴스 이미지 하나
     private String keywords;
     private Long userId;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime originalDate;
 }
