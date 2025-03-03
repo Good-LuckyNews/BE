@@ -27,6 +27,8 @@ public class ArticleEntity extends BaseEntity {
     private String title;
     @Column(name="content", nullable = false)
     private String content;
+    @Column(name="originalDate")
+    private LocalDateTime originalDate;
 
     @Column(name="originalLink")
     private String originalLink;

@@ -29,5 +29,7 @@ public class ArticleLongContentDto {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime completedTime;
     private Integer likeCount;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime originalDate;
 
 }
