@@ -197,6 +197,7 @@ public class ArticleService {
                 .keywords(article.getKeywords())  // 키워드 매핑
                 .originalDate(article.getOriginalDate())
                 .userId(article.getUserId())  // 작성자 ID
+                .likeCount(article.getLikeCount())
                 .build();
     }
     private ArticleZipListDto buildArticleZipListResponse(ArticleEntity article) {
