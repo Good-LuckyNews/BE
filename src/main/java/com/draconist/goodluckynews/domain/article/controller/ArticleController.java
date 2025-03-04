@@ -256,7 +256,7 @@ public class ArticleController {
         return articleService.getUserLikeArticles(member.getId(), page, size);
     }
     //완료한 시간 기록하기
-    @PostMapping("/article/{articleId}/completed/")
+    @PostMapping("/article/{articleId}/completed")
     public ResponseEntity<?> WriteTime(@AuthenticationPrincipal CustomUserDetails customUserDetails,@PathVariable Long articleId,
                                        @Valid @RequestBody CompletedDegreeDto completedDegreeDto) {
 
