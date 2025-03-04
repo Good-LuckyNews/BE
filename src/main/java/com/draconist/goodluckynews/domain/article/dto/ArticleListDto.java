@@ -24,4 +24,5 @@ public class ArticleListDto {
     private Long userId;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime originalDate;
+    private Integer likeCount;
 }
