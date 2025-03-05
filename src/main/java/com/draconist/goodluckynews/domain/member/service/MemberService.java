@@ -122,6 +122,6 @@ public class MemberService {
         }
         memberRepository.save(member);
 
-        return ResponseEntity.ok("회원정보가 수정되었습니다.");
+        return ResponseEntity.ok().body(ApiResponse.onSuccess(memberConverter.toMemberInfo(member)));
     }
 }
