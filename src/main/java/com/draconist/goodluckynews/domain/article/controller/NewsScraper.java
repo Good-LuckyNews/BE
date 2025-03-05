@@ -28,7 +28,7 @@ public class NewsScraper {
             String longContent = "";
             Elements allElements = doc.select("*");  // 모든 태그를 선택
             for (Element element : allElements) {
-                String text = element.text();
+                String text = element.ownText();
                 if (text.length() > longContent.length()) {  // 가장 긴 텍스트 비교
                     longContent = text;
                 }
