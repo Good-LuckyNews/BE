@@ -33,6 +33,7 @@ public class MemberConverter {
                 .hours(member.getHours())
                 .minutes(member.getMinutes())
                 .keywords(member.getKeywords())
+                .email(member.getEmail())
                 .build();
     }
 }

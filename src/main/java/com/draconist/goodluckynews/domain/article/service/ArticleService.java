@@ -63,6 +63,7 @@ public class ArticleService {
                     .longContent(articleDto.getLongContent())
                     .originalLink(articleDto.getOriginalLink())
                     .keywords(articleDto.getKeywords()) // ArticleDto의 keywords를 사용
+                    .originalDate(articleDto.getOriginalDate())
                     .build();
 
             // DB에 기사 저장
@@ -171,6 +172,7 @@ public class ArticleService {
                         .image(article.getImage())
                         .keywords(article.getKeywords())
                         .createdAt(article.getCreatedAt())
+                        .originalDate(article.getOriginalDate())
                         .likeCount(article.getLikeCount())
                         .build())
                 .collect(Collectors.toList());
@@ -193,7 +195,9 @@ public class ArticleService {
                 .completedTime(article.getCompletedTime())  // CompletedTime 매핑
                 .image(article.getImage())  // 이미지 URL을 하나로 매핑
                 .keywords(article.getKeywords())  // 키워드 매핑
+                .originalDate(article.getOriginalDate())
                 .userId(article.getUserId())  // 작성자 ID
+                .likeCount(article.getLikeCount())
                 .build();
     }
     private ArticleZipListDto buildArticleZipListResponse(ArticleEntity article) {
@@ -204,6 +208,7 @@ public class ArticleService {
                 .content(article.getContent())  // Content 매핑
                 .image(article.getImage())  // 이미지 URL을 하나로 매핑
                 .keywords(article.getKeywords())  // 키워드 매핑
+                .originalDate(article.getOriginalDate())
                 .likeCount(article.getLikeCount())
                 .build();
     }
@@ -218,6 +223,7 @@ public class ArticleService {
                 .keywords(article.getKeywords())
                 .completedTime(article.getCompletedTime())
                 .degree(article.getDegree())
+                .originalDate(article.getOriginalDate())
                 .likeCount(article.getLikeCount())
                 .build();
     }

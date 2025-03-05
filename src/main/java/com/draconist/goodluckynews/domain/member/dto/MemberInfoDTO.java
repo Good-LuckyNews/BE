@@ -13,4 +13,5 @@ public class MemberInfoDTO {
     private Integer hours;
     private Integer minutes;
     private String keywords;
+    private String email;
 }
