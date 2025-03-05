@@ -18,7 +18,7 @@ public class NewsScraper {
             Elements imgElements = doc.select("figure img"); // figure 태그 내의 img 태그 선택
             if (!imgElements.isEmpty()) {
                 image = imgElements.stream()
-                        .map(img -> img.attr("src"))
+                        .map(img -> img.absUrl("src")) // absUrl을 사용하여 상대경로를 절대경로로 변환
                         .max((src1, src2) -> Integer.compare(src1.length(), src2.length()))  // 가장 큰 이미지 선택
                         .orElse("");
                 log.info("가장 큰 이미지 URL: {}", image);
