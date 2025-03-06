@@ -1,10 +1,8 @@
 package com.draconist.goodluckynews.domain.article.service;
-import com.draconist.goodluckynews.domain.article.dto.ArticleDto;
-import com.draconist.goodluckynews.domain.article.dto.ArticleListDto;
-import com.draconist.goodluckynews.domain.article.dto.ArticleLongContentDto;
-import com.draconist.goodluckynews.domain.article.dto.ArticleZipListDto;
+import com.draconist.goodluckynews.domain.article.dto.*;
 import com.draconist.goodluckynews.domain.article.entity.ArticleEntity;
 import com.draconist.goodluckynews.domain.article.repository.ArticleRepository;
+import com.draconist.goodluckynews.domain.article.repository.CompletedTimeRepository;
 import com.draconist.goodluckynews.domain.article.repository.HeartRepository;
 import com.draconist.goodluckynews.domain.member.entity.Member;
 import com.draconist.goodluckynews.domain.member.repository.MemberRepository;
@@ -30,6 +28,7 @@ public class ArticleService {
     private final MemberRepository memberRepository;
     private final ArticleRepository articleRepository;
     private final HeartRepository heartRepository;
+    private final CompletedTimeRepository completedTimeRepository;
 
     @Transactional
     public ResponseEntity<?> saveArticles(Long userId, List<ArticleDto> articleDtos) {
@@ -87,7 +86,6 @@ public class ArticleService {
             return ResponseEntity.status(400)
                     .body(ApiResponse.onFailure(ErrorStatus._ARTICLE_NOT_FOUND, null));
         }
-
         // 랜덤 게시글 정보 빌드 (response.result)
         ArticleListDto randomArticleDto = buildArticleListResponse(randomArticle, userId);
 
@@ -110,7 +108,7 @@ public class ArticleService {
         // 게시글 정보 빌드 (response.result)
         List<ArticleZipListDto> responseDtos = new ArrayList<>();
         for (ArticleEntity article : articlePage.getContent()) {
-            ArticleZipListDto responseDto = buildArticleZipListResponse(article);
+            ArticleZipListDto responseDto = buildArticleZipListResponse(userId,article);
             responseDtos.add(responseDto);
         }
         // 응답 반환
@@ -127,7 +125,7 @@ public class ArticleService {
         //Article 찾기
         ArticleEntity article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus._ARTICLE_NOT_FOUND));
-        ArticleLongContentDto responseDto = buildArticleLongContentDto(article);
+        ArticleLongContentDto responseDto = buildArticleLongContentDto(article,userId);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.onSuccess(responseDto));
@@ -148,7 +146,7 @@ public class ArticleService {
         // 게시글 정보 빌드 (response.result)
         List<ArticleZipListDto> responseDtos = new ArrayList<>();
         for (ArticleEntity article : likedArticlesPage.getContent()) {
-            ArticleZipListDto responseDto = buildArticleZipListResponse(article);
+            ArticleZipListDto responseDto = buildArticleZipListResponse(userId,article);
             responseDtos.add(responseDto);
         }
 
@@ -184,23 +182,32 @@ public class ArticleService {
 
     //빌드 편의 메소드 converter
     private ArticleListDto buildArticleListResponse(ArticleEntity article, Long userId) {
+        boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
+        CompletedDegreeDto completedDegreeDto = completedTimeRepository
+                .findByMemberIdAndArticleId(userId, article.getId())
+                .map(completedTime -> new CompletedDegreeDto(completedTime.getDegree(), completedTime.getCompletedAt()))
+                .orElse(null); // 만약 없으면 null
+
         // ArticleListDto 빌드
         return ArticleListDto.builder()
                 .id(article.getId())  // ArticleEntity의 id를 ArticleListDto로 매핑
                 .title(article.getTitle())  // Title 매핑
                 .content(article.getContent())  // Content 매핑
-                .degree(article.getDegree())  // Degree 매핑
+                .degree(completedDegreeDto.getDegree())  // Degree 매핑
                 .longContent(article.getLongContent())
                 .originalLink(article.getOriginalLink())
-                .completedTime(article.getCompletedTime())  // CompletedTime 매핑
+                .completedTime(completedDegreeDto.getCompletedTime())  // CompletedTime 매핑
                 .image(article.getImage())  // 이미지 URL을 하나로 매핑
                 .keywords(article.getKeywords())  // 키워드 매핑
                 .originalDate(article.getOriginalDate())
                 .userId(article.getUserId())  // 작성자 ID
                 .likeCount(article.getLikeCount())
+                .bookmarked(isBookmarked)
                 .build();
     }
-    private ArticleZipListDto buildArticleZipListResponse(ArticleEntity article) {
+    private ArticleZipListDto buildArticleZipListResponse(Long userId,ArticleEntity article) {
+        boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
+
         // ArticleListDto 빌드
         return ArticleZipListDto.builder()
                 .id(article.getId())  // ArticleEntity의 id를 ArticleListDto로 매핑
@@ -210,10 +217,17 @@ public class ArticleService {
                 .keywords(article.getKeywords())  // 키워드 매핑
                 .originalDate(article.getOriginalDate())
                 .likeCount(article.getLikeCount())
+                .bookmarked(isBookmarked)
                 .build();
     }
 
-    private ArticleLongContentDto buildArticleLongContentDto(ArticleEntity article) {
+    private ArticleLongContentDto buildArticleLongContentDto(ArticleEntity article, Long userId) {
+        boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
+        CompletedDegreeDto completedDegreeDto = completedTimeRepository
+                .findByMemberIdAndArticleId(userId, article.getId())
+                .map(completedTime -> new CompletedDegreeDto(completedTime.getDegree(), completedTime.getCompletedAt()))
+                .orElse(null); // 만약 없으면 null
+
         return ArticleLongContentDto.builder()
                 .id(article.getId())
                 .title(article.getTitle())
@@ -221,10 +235,11 @@ public class ArticleService {
                 .originalLink(article.getOriginalLink())
                 .image(article.getImage())
                 .keywords(article.getKeywords())
-                .completedTime(article.getCompletedTime())
-                .degree(article.getDegree())
+                .completedTime(completedDegreeDto.getCompletedTime())
+                .degree(completedDegreeDto.getDegree())
                 .originalDate(article.getOriginalDate())
                 .likeCount(article.getLikeCount())
+                .bookmarked(isBookmarked)
                 .build();
     }
 

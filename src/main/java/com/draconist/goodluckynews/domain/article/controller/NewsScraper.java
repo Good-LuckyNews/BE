@@ -18,7 +18,7 @@ public class NewsScraper {
             Elements imgElements = doc.select("figure img"); // figure 태그 내의 img 태그 선택
             if (!imgElements.isEmpty()) {
                 image = imgElements.stream()
-                        .map(img -> img.attr("src"))
+                        .map(img -> img.absUrl("src")) // absUrl을 사용하여 상대경로를 절대경로로 변환
                         .max((src1, src2) -> Integer.compare(src1.length(), src2.length()))  // 가장 큰 이미지 선택
                         .orElse("");
                 log.info("가장 큰 이미지 URL: {}", image);
@@ -28,8 +28,13 @@ public class NewsScraper {
             String longContent = "";
             Elements allElements = doc.select("*");  // 모든 태그를 선택
             for (Element element : allElements) {
-                String text = element.ownText();
-                if (text.length() > longContent.length()) {  // 가장 긴 텍스트 비교
+                Elements links = element.select("a"); // 현재 요소 내 a 태그 선택
+                for (Element link : links) {
+                    link.remove(); // a 태그 자체를 제거하여 내부 텍스트를 포함하지 않도록 함
+                }
+
+                String text = element.text(); // a 태그 제거 후 텍스트 가져오기
+                if (text.length() > longContent.length()) {
                     longContent = text;
                 }
             }
