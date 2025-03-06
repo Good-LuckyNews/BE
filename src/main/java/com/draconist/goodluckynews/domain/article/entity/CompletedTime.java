@@ -52,5 +52,14 @@ import static jakarta.persistence.FetchType.LAZY;
             this.completedAt = completedAt;
             this.degree = degree;
         }
+        @Override
+        public String toString() {
+            return "CompletedTime{" +
+                    "id=" + id +
+                    ", memberId=" + (member != null ? member.getId() : "null") +
+                    ", articleId=" + (article != null ? article.getId() : "null") +
+                    ", completedAt=" + completedAt +
+                    '}';
+        }
 
     }
