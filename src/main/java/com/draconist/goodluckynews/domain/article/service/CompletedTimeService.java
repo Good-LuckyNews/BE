@@ -35,6 +35,7 @@ import java.util.List;
         private final CompletedTimeRepository completedTimeRepository;
         private final MemberRepository memberRepository;
         private final ArticleRepository articleRepository;
+        private final HeartRepository heartRepository;
 
         @Transactional
         public ResponseEntity<?> WriteTime(Long articleId, Long userId, CompletedDegreeDto completedDegreeDto) {
@@ -59,12 +60,14 @@ import java.util.List;
                 existingCompletedTime.setDegree(completedDegreeDto.getDegree());  // 긍정도를 업데이트
                 existingCompletedTime.setCompletedAt(now);  // 완료 시간을 업데이트
                 completedTimeRepository.save(existingCompletedTime);  // 업데이트된 객체 저장
-                return ResponseEntity.status(200).body(ApiResponse.onSuccess("완료 시간이 업데이트되었습니다."));
+                ArticleLongContentDto responseDto = buildArticleLongContentDto(article,userId);
+                return ResponseEntity.status(200).body(ApiResponse.onSuccess(responseDto));
             } else {
                 // 완료 시간이 없으면 새로 생성
                 CompletedTime completedTime = new CompletedTime(member, article, now, completedDegreeDto.getDegree());
                 completedTimeRepository.save(completedTime);
-                return ResponseEntity.status(201).body(ApiResponse.onSuccess("긍정도를 기록하고 완료했습니다."));
+                ArticleLongContentDto responseDto = buildArticleLongContentDto(article,userId);
+                return ResponseEntity.status(201).body(ApiResponse.onSuccess(responseDto));
             }
         }
     //그래프 값
@@ -280,7 +283,27 @@ import java.util.List;
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.onSuccess(responseDto));
     }
+    private ArticleLongContentDto buildArticleLongContentDto(ArticleEntity article, Long userId) {
+        boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
+        CompletedDegreeDto completedDegreeDto = completedTimeRepository
+                .findByMemberIdAndArticleId(userId, article.getId())
+                .map(completedTime -> new CompletedDegreeDto(completedTime.getDegree(), completedTime.getCompletedAt()))
+                .orElse(null); // 만약 없으면 null
 
+        return ArticleLongContentDto.builder()
+                .id(article.getId())
+                .title(article.getTitle())
+                .longContent(article.getLongContent())
+                .originalLink(article.getOriginalLink())
+                .image(article.getImage())
+                .keywords(article.getKeywords())
+                .completedTime(completedDegreeDto.getCompletedTime())
+                .degree(completedDegreeDto.getDegree())
+                .originalDate(article.getOriginalDate())
+                .likeCount(article.getLikeCount())
+                .bookmarked(isBookmarked)
+                .build();
+    }
 
 
 
