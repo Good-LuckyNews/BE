@@ -40,12 +40,6 @@ public class ArticleEntity extends BaseEntity {
     @Column(name="longContent",columnDefinition = "TEXT")
     private String longContent;
 
-
-    @Column(name="degree")
-    private Integer degree;
-    @Column(name="completedTime")
-    private LocalDateTime completedTime;
-
     //userId에서 가져와 엔티티화
     @Column(name="keywords")
     private String keywords;
@@ -77,14 +71,5 @@ public class ArticleEntity extends BaseEntity {
         }
     }
 
-    //완료시간 기록
-    public void updateCompletedTime(LocalDateTime completedNowTime) {
-        this.completedTime = completedNowTime;
-    }
-
-    //긍정도 기록
-    public void updateDegree(Integer degree) {
-        this.degree = degree;
-    }
 
 }

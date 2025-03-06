@@ -1,10 +1,8 @@
 package com.draconist.goodluckynews.domain.article.service;
-import com.draconist.goodluckynews.domain.article.dto.ArticleDto;
-import com.draconist.goodluckynews.domain.article.dto.ArticleListDto;
-import com.draconist.goodluckynews.domain.article.dto.ArticleLongContentDto;
-import com.draconist.goodluckynews.domain.article.dto.ArticleZipListDto;
+import com.draconist.goodluckynews.domain.article.dto.*;
 import com.draconist.goodluckynews.domain.article.entity.ArticleEntity;
 import com.draconist.goodluckynews.domain.article.repository.ArticleRepository;
+import com.draconist.goodluckynews.domain.article.repository.CompletedTimeRepository;
 import com.draconist.goodluckynews.domain.article.repository.HeartRepository;
 import com.draconist.goodluckynews.domain.member.entity.Member;
 import com.draconist.goodluckynews.domain.member.repository.MemberRepository;
@@ -30,6 +28,7 @@ public class ArticleService {
     private final MemberRepository memberRepository;
     private final ArticleRepository articleRepository;
     private final HeartRepository heartRepository;
+    private final CompletedTimeRepository completedTimeRepository;
 
     @Transactional
     public ResponseEntity<?> saveArticles(Long userId, List<ArticleDto> articleDtos) {
@@ -184,15 +183,20 @@ public class ArticleService {
     //빌드 편의 메소드 converter
     private ArticleListDto buildArticleListResponse(ArticleEntity article, Long userId) {
         boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
+        CompletedDegreeDto completedDegreeDto = completedTimeRepository
+                .findByMemberIdAndArticleId(userId, article.getId())
+                .map(completedTime -> new CompletedDegreeDto(completedTime.getDegree(), completedTime.getCompletedAt()))
+                .orElse(null); // 만약 없으면 null
+
         // ArticleListDto 빌드
         return ArticleListDto.builder()
                 .id(article.getId())  // ArticleEntity의 id를 ArticleListDto로 매핑
                 .title(article.getTitle())  // Title 매핑
                 .content(article.getContent())  // Content 매핑
-                .degree(article.getDegree())  // Degree 매핑
+                .degree(completedDegreeDto.getDegree())  // Degree 매핑
                 .longContent(article.getLongContent())
                 .originalLink(article.getOriginalLink())
-                .completedTime(article.getCompletedTime())  // CompletedTime 매핑
+                .completedTime(completedDegreeDto.getCompletedTime())  // CompletedTime 매핑
                 .image(article.getImage())  // 이미지 URL을 하나로 매핑
                 .keywords(article.getKeywords())  // 키워드 매핑
                 .originalDate(article.getOriginalDate())
@@ -203,6 +207,7 @@ public class ArticleService {
     }
     private ArticleZipListDto buildArticleZipListResponse(Long userId,ArticleEntity article) {
         boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
+
         // ArticleListDto 빌드
         return ArticleZipListDto.builder()
                 .id(article.getId())  // ArticleEntity의 id를 ArticleListDto로 매핑
@@ -218,6 +223,11 @@ public class ArticleService {
 
     private ArticleLongContentDto buildArticleLongContentDto(ArticleEntity article, Long userId) {
         boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
+        CompletedDegreeDto completedDegreeDto = completedTimeRepository
+                .findByMemberIdAndArticleId(userId, article.getId())
+                .map(completedTime -> new CompletedDegreeDto(completedTime.getDegree(), completedTime.getCompletedAt()))
+                .orElse(null); // 만약 없으면 null
+
         return ArticleLongContentDto.builder()
                 .id(article.getId())
                 .title(article.getTitle())
@@ -225,8 +235,8 @@ public class ArticleService {
                 .originalLink(article.getOriginalLink())
                 .image(article.getImage())
                 .keywords(article.getKeywords())
-                .completedTime(article.getCompletedTime())
-                .degree(article.getDegree())
+                .completedTime(completedDegreeDto.getCompletedTime())
+                .degree(completedDegreeDto.getDegree())
                 .originalDate(article.getOriginalDate())
                 .likeCount(article.getLikeCount())
                 .bookmarked(isBookmarked)
