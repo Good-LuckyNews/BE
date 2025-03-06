@@ -4,6 +4,8 @@ import com.draconist.goodluckynews.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 
@@ -38,12 +40,6 @@ public class ArticleEntity extends BaseEntity {
     @Column(name="longContent",columnDefinition = "TEXT")
     private String longContent;
 
-
-    @Column(name="degree")
-    private Integer degree;
-    @Column(name="completedTime")
-    private LocalDateTime completedTime;
-
     //userId에서 가져와 엔티티화
     @Column(name="keywords")
     private String keywords;
@@ -51,6 +47,14 @@ public class ArticleEntity extends BaseEntity {
     @ColumnDefault("0")
     @Column(name = "likeCount")
     private Integer likeCount;
+
+    @CreatedDate  // ✅ 생성 시 자동 저장
+    @Column(updatable = false, nullable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate  // ✅ 업데이트 시 자동 갱신
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 
     public void updateLikeCount(boolean increase) {
         if (increase) {
@@ -67,14 +71,5 @@ public class ArticleEntity extends BaseEntity {
         }
     }
 
-    //완료시간 기록
-    public void updateCompletedTime(LocalDateTime completedNowTime) {
-        this.completedTime = completedNowTime;
-    }
-
-    //긍정도 기록
-    public void updateDegree(Integer degree) {
-        this.degree = degree;
-    }
 
 }
