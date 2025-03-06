@@ -285,7 +285,9 @@ import java.util.List;
     }
 
     private ArticleLongContentDto buildArticleLongContentDto(ArticleEntity article, Long userId) {
-        boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
+        Heart heart = heartRepository.findByMemberIdAndArticleId(userId, article.getId())
+                .orElse(null);
+        boolean isBookmarked = heart != null && heart.isBookmarked(); // 북마크 여부 확인
         CompletedDegreeDto completedDegreeDto = completedTimeRepository
                 .findByMemberIdAndArticleId(userId, article.getId())
                 .map(completedTime -> new CompletedDegreeDto(completedTime.getDegree(), completedTime.getCompletedAt()))
