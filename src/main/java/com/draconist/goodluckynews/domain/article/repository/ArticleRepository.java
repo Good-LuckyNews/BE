@@ -17,9 +17,7 @@ public interface ArticleRepository extends JpaRepository<ArticleEntity,Long> {
     @Query("SELECT a FROM ArticleEntity a WHERE (a.title LIKE %:searchQuery% OR a.content LIKE %:searchQuery% OR a.keywords LIKE %:searchQuery%) ORDER BY a.createdAt DESC")
     Page<ArticleEntity> searchArticles(@Param("searchQuery") String searchQuery, Pageable pageable);
 
-    // 회원 ID로 랜덤으로 하나의 게시글 조회
-    @Query(value = "SELECT * FROM article a WHERE a.user_id = :userId ORDER BY RAND() LIMIT 1", nativeQuery = true)
-    ArticleEntity findRandomArticleByUserId(@Param("userId") Long userId);
-
-
+    // 회원 ID로 랜덤으로 하나의 게시글
+    @Query(value = "SELECT * FROM article WHERE keywords LIKE %:keyword% ORDER BY RAND() LIMIT 1", nativeQuery = true)
+    ArticleEntity findRandomArticleByKeyword(@Param("keyword") String keyword);
 }
