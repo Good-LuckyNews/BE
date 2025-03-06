@@ -50,7 +50,7 @@ public class Heart extends BaseEntity {
 
     @PrePersist
     public void prePersist() {
-        this.bookmarked = false; // 기본값 설정
+        this.bookmarked = true; // 기본값 설정
     }
     // 북마크 상태 변경 메서드
     //취소
