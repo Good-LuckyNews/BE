@@ -1,6 +1,7 @@
 package com.draconist.goodluckynews.domain.article.service;
 import com.draconist.goodluckynews.domain.article.dto.*;
 import com.draconist.goodluckynews.domain.article.entity.ArticleEntity;
+import com.draconist.goodluckynews.domain.article.entity.Heart;
 import com.draconist.goodluckynews.domain.article.repository.ArticleRepository;
 import com.draconist.goodluckynews.domain.article.repository.CompletedTimeRepository;
 import com.draconist.goodluckynews.domain.article.repository.HeartRepository;
@@ -161,18 +162,9 @@ public class ArticleService {
         Pageable pageable = PageRequest.of(page, size);
         Page<ArticleEntity> articlePage = articleRepository.searchArticles(searchQuery, pageable);
 
-        // ArticleZipListDto로 변환
+        // ArticleZipListDto로 변환 (builder 활용)
         List<ArticleZipListDto> responseDtos = articlePage.stream()
-                .map(article -> ArticleZipListDto.builder()
-                        .id(article.getId())
-                        .title(article.getTitle())
-                        .content(article.getContent())
-                        .image(article.getImage())
-                        .keywords(article.getKeywords())
-                        .createdAt(article.getCreatedAt())
-                        .originalDate(article.getOriginalDate())
-                        .likeCount(article.getLikeCount())
-                        .build())
+                .map(article -> buildArticleZipListResponse(userId, article))
                 .collect(Collectors.toList());
 
         // 응답 반환
@@ -182,7 +174,9 @@ public class ArticleService {
 
     //빌드 편의 메소드 converter
     private ArticleListDto buildArticleListResponse(ArticleEntity article, Long userId) {
-        boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
+        Heart heart = heartRepository.findByMemberIdAndArticleId(userId, article.getId())
+                .orElse(null);
+        boolean isBookmarked = heart != null && heart.isBookmarked(); // 북마크 여부 확인
         CompletedDegreeDto completedDegreeDto = completedTimeRepository
                 .findByMemberIdAndArticleId(userId, article.getId())
                 .map(completedTime -> new CompletedDegreeDto(completedTime.getDegree(), completedTime.getCompletedAt()))
@@ -206,7 +200,9 @@ public class ArticleService {
                 .build();
     }
     private ArticleZipListDto buildArticleZipListResponse(Long userId,ArticleEntity article) {
-        boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
+        Heart heart = heartRepository.findByMemberIdAndArticleId(userId, article.getId())
+                .orElse(null);
+        boolean isBookmarked = heart != null && heart.isBookmarked(); // 북마크 여부 확인
         CompletedDegreeDto completedDegreeDto = completedTimeRepository
                 .findByMemberIdAndArticleId(userId, article.getId())
                 .map(completedTime -> new CompletedDegreeDto(completedTime.getDegree(), completedTime.getCompletedAt()))
@@ -228,7 +224,9 @@ public class ArticleService {
     }
 
     private ArticleLongContentDto buildArticleLongContentDto(ArticleEntity article, Long userId) {
-        boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
+        Heart heart = heartRepository.findByMemberIdAndArticleId(userId, article.getId())
+                .orElse(null);
+        boolean isBookmarked = heart != null && heart.isBookmarked(); // 북마크 여부 확인
         CompletedDegreeDto completedDegreeDto = completedTimeRepository
                 .findByMemberIdAndArticleId(userId, article.getId())
                 .map(completedTime -> new CompletedDegreeDto(completedTime.getDegree(), completedTime.getCompletedAt()))
