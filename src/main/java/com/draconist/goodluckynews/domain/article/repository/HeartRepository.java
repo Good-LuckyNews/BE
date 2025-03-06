@@ -31,4 +31,6 @@ public interface HeartRepository extends JpaRepository<Heart, Long> {
     // 회원이 좋아요를 누른 기사 조회
     @Query("SELECT h.article FROM Heart h WHERE h.member.id = :userId ORDER BY h.article.createdAt DESC")
     Page<ArticleEntity> findAllLikedArticlesByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    boolean existsByMemberIdAndArticleId(Long userId, Long id);
 }

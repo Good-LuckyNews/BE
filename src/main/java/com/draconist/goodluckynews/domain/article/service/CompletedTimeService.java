@@ -42,53 +42,31 @@ import java.util.List;
             Member member = memberRepository.findById(userId)
                     .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
-            //Article 찾기
+            // Article 찾기
             ArticleEntity article = articleRepository.findById(articleId)
                     .orElseThrow(() -> new GeneralException(ErrorStatus._ARTICLE_NOT_FOUND));
-
-            // 이미 완료되어 있다면 예외 처리
-            if (completedTimeRepository.findByMemberAndArticle(member, article).isPresent()) {
-                throw new GeneralException(ErrorStatus._ALREADY_COMPLETED);
-            }
 
             // 현재 시간 저장
             LocalDateTime now = LocalDateTime.now();
 
-            // 완료 시간 저장
-            CompletedTime completedTime = new CompletedTime(member, article, now);
-            completedTimeRepository.save(completedTime);
+            // 이미 완료 시간이 존재하는지 확인
+            CompletedTime existingCompletedTime = completedTimeRepository
+                    .findByMemberIdAndArticleId(userId, articleId)
+                    .orElse(null);
 
-            // `ArticleEntity`에도 완료 시간 저장
-            article.updateCompletedTime(now);
-            article.updateDegree(completedDegreeDto.getDegree());
-            articleRepository.save(article);
-            return ResponseEntity.status(201).body(ApiResponse.onSuccess("긍정도를 기록하고 완료했습니다"));
+            if (existingCompletedTime != null) {
+                // 이미 완료 시간이 존재하면 수정
+                existingCompletedTime.setDegree(completedDegreeDto.getDegree());  // 긍정도를 업데이트
+                existingCompletedTime.setCompletedAt(now);  // 완료 시간을 업데이트
+                completedTimeRepository.save(existingCompletedTime);  // 업데이트된 객체 저장
+                return ResponseEntity.status(200).body(ApiResponse.onSuccess("완료 시간이 업데이트되었습니다."));
+            } else {
+                // 완료 시간이 없으면 새로 생성
+                CompletedTime completedTime = new CompletedTime(member, article, now, completedDegreeDto.getDegree());
+                completedTimeRepository.save(completedTime);
+                return ResponseEntity.status(201).body(ApiResponse.onSuccess("긍정도를 기록하고 완료했습니다."));
+            }
         }
-
-    @Transactional
-    public ResponseEntity<?> UpdateTime(Long articleId, Long userId, CompletedDegreeDto completedDegreeDto) {
-        // jwt확인
-        Member member = memberRepository.findById(userId)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-
-        //Article 찾기
-        ArticleEntity article = articleRepository.findById(articleId)
-                .orElseThrow(() -> new GeneralException(ErrorStatus._ARTICLE_NOT_FOUND));
-
-        // 현재 시간 저장
-        LocalDateTime now = LocalDateTime.now();
-
-        // 완료 시간 저장
-        CompletedTime completedTime = new CompletedTime(member, article, now);
-        completedTimeRepository.save(completedTime);
-
-        // `ArticleEntity`에도 완료 시간 저장
-        article.updateCompletedTime(now);
-        article.updateDegree(completedDegreeDto.getDegree());
-        articleRepository.save(article);
-        return ResponseEntity.status(201).body(ApiResponse.onSuccess("긍정도를 기록하고 완료했습니다"));
-    }
-
     //그래프 값
 
 
@@ -115,7 +93,7 @@ import java.util.List;
             LocalDateTime completedAt = completedTime.getCompletedAt();
             if (completedAt.isAfter(startOfWeek) && completedAt.isBefore(endOfWeek)) {
                 int dayOfWeek = completedAt.getDayOfWeek().getValue() - 1; // 월요일: 0, 일요일: 6
-                completedArticlesPerDay[dayOfWeek] += completedTime.getArticle().getDegree();
+                completedArticlesPerDay[dayOfWeek] += completedTime.getDegree();
             }
         }
 
@@ -159,7 +137,7 @@ import java.util.List;
             // 첫날부터 마지막 날까지 주 단위로 나누기
             int weekOfMonth = getWeekOfMonth(completedDate, firstDayOfLastMonth);
             if (weekOfMonth >= 0 && weekOfMonth < completedArticlesPerWeek.length) {
-                completedArticlesPerWeek[weekOfMonth] +=completedTime.getArticle().getDegree();;
+                completedArticlesPerWeek[weekOfMonth] +=completedTime.getDegree();;
             }
         }
 
@@ -211,7 +189,7 @@ import java.util.List;
             }
 
             if (monthDiff < 6) {
-                completedArticlesPerMonth[monthDiff] += completedTime.getArticle().getDegree();
+                completedArticlesPerMonth[monthDiff] += completedTime.getDegree();
             }
         }
 
@@ -285,7 +263,7 @@ import java.util.List;
                 periodIndex = 5;
             }
 
-            completedArticlesPerPeriod[periodIndex] += completedTime.getArticle().getDegree();
+            completedArticlesPerPeriod[periodIndex] += completedTime.getDegree();
         }
 
         // SevenCompletedGraphDto에 완료된 기사 개수 세팅 (최신이 first에 오도록)

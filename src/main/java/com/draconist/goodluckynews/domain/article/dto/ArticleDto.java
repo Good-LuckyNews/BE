@@ -24,4 +24,5 @@ public class ArticleDto {
     private LocalDateTime createdAt;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime originalDate;
+    private boolean bookmarked;
 }

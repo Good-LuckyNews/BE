@@ -232,16 +232,6 @@ public class ArticleController {
         return heartService.insert(articleId,member.getId());
     }
 
-    // 북마크 취소
-    @DeleteMapping("/article/{articleId}/like")
-    public ResponseEntity<?> delete(@AuthenticationPrincipal CustomUserDetails customUserDetails,@PathVariable Long articleId) {
-
-        // 1. 이메일로 회원 id 찾기
-        Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        return heartService.delete(articleId,member.getId());
-    }
-
     //사용자가 북마크한 기사 가져오기
     @GetMapping("/user/article/likes")
     public ResponseEntity<?> getUserLikeArticles(@AuthenticationPrincipal CustomUserDetails customUserDetails,
