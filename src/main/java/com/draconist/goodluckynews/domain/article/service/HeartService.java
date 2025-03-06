@@ -42,7 +42,7 @@ public class HeartService {
 
         // 기존 Heart 객체 확인
         Heart heart = heartRepository.findByMemberAndArticle(member, article)
-                .orElse(new Heart(member, article, false)); // 없으면 새로 생성
+                .orElse(new Heart(member, article, true)); // 없으면 새로 생성
 
         //북마크가 true면 이미 북마크되어 있으면
             if(heart.isBookmarked()) {
