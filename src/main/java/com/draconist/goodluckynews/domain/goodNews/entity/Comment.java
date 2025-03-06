@@ -3,7 +3,6 @@ package com.draconist.goodluckynews.domain.goodNews.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -24,13 +23,13 @@ public class Comment {
     @Column(name = "postId", nullable = false)
     private Long postId; // 댓글이 속한 게시글 ID
 
+    @Column(name = "userId", nullable = false)
+    private Long userId; // 댓글 작성자 ID
+
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content; // 댓글 내용
 
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt; // 댓글 작성 시간
-
-    @UpdateTimestamp
-    private LocalDateTime updatedAt; // 댓글 수정 시간
 }

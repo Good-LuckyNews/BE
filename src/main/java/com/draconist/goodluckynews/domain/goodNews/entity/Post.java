@@ -21,6 +21,9 @@ public class Post {
     @Column(name = "postId")
     private Long id;
 
+    @Column(name = "title", nullable = false, length = 255)
+    private String title; // 게시글 제목
+
     @Column(name = "placeId", nullable = false)
     private Long placeId; // 게시글이 속한 장소 ID
 
@@ -40,8 +43,9 @@ public class Post {
     @UpdateTimestamp
     private LocalDateTime updatedAt; // 수정 날짜
 
-    public static Post createPost(Long placeId, Long userId, String content, String image) {
+    public static Post createPost(String title, Long placeId, Long userId, String content, String image) {
         return Post.builder()
+                .title(title) // 제목 추가
                 .placeId(placeId)
                 .userId(userId)
                 .content(content)
