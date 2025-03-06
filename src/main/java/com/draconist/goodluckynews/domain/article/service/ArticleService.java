@@ -193,10 +193,10 @@ public class ArticleService {
                 .id(article.getId())  // ArticleEntity의 id를 ArticleListDto로 매핑
                 .title(article.getTitle())  // Title 매핑
                 .content(article.getContent())  // Content 매핑
-                .degree(completedDegreeDto.getDegree())  // Degree 매핑
+                .degree(completedDegreeDto != null ? completedDegreeDto.getDegree() : null)
+                .completedTime(completedDegreeDto != null ? completedDegreeDto.getCompletedTime() : null)
                 .longContent(article.getLongContent())
                 .originalLink(article.getOriginalLink())
-                .completedTime(completedDegreeDto.getCompletedTime())  // CompletedTime 매핑
                 .image(article.getImage())  // 이미지 URL을 하나로 매핑
                 .keywords(article.getKeywords())  // 키워드 매핑
                 .originalDate(article.getOriginalDate())
@@ -207,12 +207,18 @@ public class ArticleService {
     }
     private ArticleZipListDto buildArticleZipListResponse(Long userId,ArticleEntity article) {
         boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
+        CompletedDegreeDto completedDegreeDto = completedTimeRepository
+                .findByMemberIdAndArticleId(userId, article.getId())
+                .map(completedTime -> new CompletedDegreeDto(completedTime.getDegree(), completedTime.getCompletedAt()))
+                .orElse(null); // 만약 없으면 null
 
         // ArticleListDto 빌드
         return ArticleZipListDto.builder()
                 .id(article.getId())  // ArticleEntity의 id를 ArticleListDto로 매핑
                 .title(article.getTitle())  // Title 매핑
                 .content(article.getContent())  // Content 매핑
+                .degree(completedDegreeDto != null ? completedDegreeDto.getDegree() : null)
+                .completedTime(completedDegreeDto != null ? completedDegreeDto.getCompletedTime() : null)
                 .image(article.getImage())  // 이미지 URL을 하나로 매핑
                 .keywords(article.getKeywords())  // 키워드 매핑
                 .originalDate(article.getOriginalDate())
@@ -235,8 +241,8 @@ public class ArticleService {
                 .originalLink(article.getOriginalLink())
                 .image(article.getImage())
                 .keywords(article.getKeywords())
-                .completedTime(completedDegreeDto.getCompletedTime())
-                .degree(completedDegreeDto.getDegree())
+                .degree(completedDegreeDto != null ? completedDegreeDto.getDegree() : null)
+                .completedTime(completedDegreeDto != null ? completedDegreeDto.getCompletedTime() : null)
                 .originalDate(article.getOriginalDate())
                 .likeCount(article.getLikeCount())
                 .bookmarked(isBookmarked)
