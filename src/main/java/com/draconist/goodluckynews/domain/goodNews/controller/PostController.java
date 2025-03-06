@@ -26,7 +26,7 @@ public class PostController {
     @GetMapping("/{postId}")
     public ResponseEntity<?> getPostById(@PathVariable Long postId) {
         return postService.getPostById(postId);
-    }//내가 작성한 희소식
+    }//희소식 상세 조회
 
     @GetMapping
     public ResponseEntity<?> getAllPosts(
@@ -42,5 +42,11 @@ public class PostController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         return postService.togglePostLike(postId, userDetails.getEmail());
     }//좋아요
+
+    @GetMapping("/mypage")
+    public ResponseEntity<?> getMyPosts(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return postService.getMyPosts(userDetails.getEmail());
+    }//내가 쓴 페이지 조회
+
 
 }
