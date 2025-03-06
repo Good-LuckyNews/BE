@@ -39,10 +39,22 @@ public class HeartService {
         //Article 찾기
         ArticleEntity article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus._ARTICLE_NOT_FOUND));
-
+        //새로 생성했다면
         // 기존 Heart 객체 확인
-        Heart heart = heartRepository.findByMemberAndArticle(member, article)
-                .orElse(new Heart(member, article, true)); // 없으면 새로 생성
+        Heart heart = heartRepository.findByMemberAndArticle(member, article).orElse(null);
+        //객체가 없으면 null
+        if (heart == null) {
+            heart = new Heart(member, article, true);
+            heartRepository.save(heart);
+            // 게시글의 좋아요 수 갱신
+            article.updateLikeCount(true);
+            articleRepository.save(article);
+
+            ArticleLongContentDto responseDto = buildArticleLongContentDto(article, userId);
+            return ResponseEntity.status(201).body(ApiResponse.onSuccess(responseDto));
+        }
+
+//이미 생성된 북마크가 있을때
 
         //북마크가 true면 이미 북마크되어 있으면
             if(heart.isBookmarked()) {
@@ -60,7 +72,7 @@ public class HeartService {
                 articleRepository.save(article);
             }
         ArticleLongContentDto responseDto = buildArticleLongContentDto(article,userId);
-        return ResponseEntity.status(201).body(ApiResponse.onSuccess(responseDto));
+        return ResponseEntity.status(200).body(ApiResponse.onSuccess(responseDto));
     }
 
     //빌드 분리
