@@ -1,5 +1,6 @@
 package com.draconist.goodluckynews.domain.article.service;
 
+import com.draconist.goodluckynews.domain.article.dto.ArticleLongContentDto;
 import com.draconist.goodluckynews.domain.article.dto.HeartDto;
 import com.draconist.goodluckynews.domain.article.entity.ArticleEntity;
 import com.draconist.goodluckynews.domain.article.entity.Heart;
@@ -53,8 +54,24 @@ public class HeartService {
                 article.updateLikeCount(true);
                 articleRepository.save(article);
             }
-
-        return ResponseEntity.status(201).body(ApiResponse.onSuccess("좋아요 성공했습니다."));
+        ArticleLongContentDto responseDto = buildArticleLongContentDto(article,userId);
+        return ResponseEntity.status(201).body(ApiResponse.onSuccess(responseDto));
+    }
+    private ArticleLongContentDto buildArticleLongContentDto(ArticleEntity article, Long userId) {
+        boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
+        return ArticleLongContentDto.builder()
+                .id(article.getId())
+                .title(article.getTitle())
+                .longContent(article.getLongContent())
+                .originalLink(article.getOriginalLink())
+                .image(article.getImage())
+                .keywords(article.getKeywords())
+                .completedTime(article.getCompletedTime())
+                .degree(article.getDegree())
+                .originalDate(article.getOriginalDate())
+                .likeCount(article.getLikeCount())
+                .bookmarked(isBookmarked)
+                .build();
     }
 
 }
