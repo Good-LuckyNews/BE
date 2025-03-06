@@ -27,4 +27,8 @@ public class ArticleZipListDto {
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         private LocalDateTime originalDate;
         private boolean bookmarked;
+        private Integer degree;
+        //완료버튼 누른 시간
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+        private LocalDateTime completedTime;
 }

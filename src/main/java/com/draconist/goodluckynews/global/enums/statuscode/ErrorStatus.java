@@ -43,6 +43,7 @@ public enum ErrorStatus implements BaseCode {
 
 	// **✅ 추가된 CompletedTime(기사 완료) 관련 오류**
 	_ALREADY_COMPLETED(HttpStatus.BAD_REQUEST, "ARTICLE4005", "이미 완료된 기사입니다."),
+	_COMPLETED_NOTFOUND(HttpStatus.BAD_REQUEST, "ARTICLE4002", "기사를 찾을수 없습니다"),
 
 	// **✅ 추가된 페이지네이션 관련 오류**
 	_PAGE_INVALID_REQUEST(HttpStatus.BAD_REQUEST, "PAGE4001", "잘못된 페이지네이션 요청입니다. 페이지 번호는 0 이상이어야 합니다."),
