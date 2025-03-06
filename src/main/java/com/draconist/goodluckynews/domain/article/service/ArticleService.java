@@ -20,7 +20,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -80,9 +82,14 @@ public class ArticleService {
         // 404 : 토큰에 해당하는 회원이 실제로 존재하는지 확인
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+        // user의 keyword에 따라 랜덤으로 긁어옵니다.
+        String keywords = member.getKeywords();  // "선행,봉사,활동"
+        List<String> keywordList = Arrays.asList(keywords.split(","));
 
-        // 랜덤으로 게시글 하나 가져오기
-        ArticleEntity randomArticle = articleRepository.findRandomArticleByUserId(userId);
+        // 랜덤으로 키워드 하나 선택
+        String randomKeyword = keywordList.get(new Random().nextInt(keywordList.size()));
+        // 해당 키워드에 맞는 랜덤 기사 가져오기
+        ArticleEntity randomArticle = articleRepository.findRandomArticleByKeyword(randomKeyword);
         if (randomArticle == null) {
             return ResponseEntity.status(400)
                     .body(ApiResponse.onFailure(ErrorStatus._ARTICLE_NOT_FOUND, null));
