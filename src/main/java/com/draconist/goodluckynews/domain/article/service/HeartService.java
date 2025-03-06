@@ -1,6 +1,7 @@
 package com.draconist.goodluckynews.domain.article.service;
 
 import com.draconist.goodluckynews.domain.article.dto.ArticleLongContentDto;
+import com.draconist.goodluckynews.domain.article.dto.CompletedDegreeDto;
 import com.draconist.goodluckynews.domain.article.dto.HeartDto;
 import com.draconist.goodluckynews.domain.article.entity.ArticleEntity;
 import com.draconist.goodluckynews.domain.article.entity.CompletedTime;
@@ -63,7 +64,11 @@ public class HeartService {
     }
     private ArticleLongContentDto buildArticleLongContentDto(ArticleEntity article, Long userId) {
         boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
-        boolean isComplete = completedTimeRepository.
+        CompletedDegreeDto completedDegreeDto = completedTimeRepository
+                .findByMemberIdAndArticleId(userId, article.getId())
+                .map(completedTime -> new CompletedDegreeDto(completedTime.getDegree(), completedTime.getCompletedAt()))
+                .orElse(null); // 만약 없으면 null
+
         return ArticleLongContentDto.builder()
                 .id(article.getId())
                 .title(article.getTitle())
@@ -71,12 +76,11 @@ public class HeartService {
                 .originalLink(article.getOriginalLink())
                 .image(article.getImage())
                 .keywords(article.getKeywords())
-                .completedTime(article.getCompletedTime())
-                .degree(article.getDegree())
+                .completedTime(completedDegreeDto.getCompletedTime())
+                .degree(completedDegreeDto.getDegree())
                 .originalDate(article.getOriginalDate())
                 .likeCount(article.getLikeCount())
                 .bookmarked(isBookmarked)
                 .build();
     }
-
 }
