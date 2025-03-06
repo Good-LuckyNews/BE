@@ -142,5 +142,30 @@ public class PostService {
         return ResponseEntity.ok(postDtoList);
     }
 
+    public ResponseEntity<?> getMyPosts(String email) {
+        // 1. 사용자 조회
+        Member user = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 2. 사용자가 작성한 모든 게시글 조회
+        List<Post> posts = postRepository.findByUserId(user.getId());
+
+        // 3. 조회된 게시글을 DTO로 변환하여 리스트로 반환
+        List<PostDto> postDtoList = posts.stream()
+                .map(post -> PostDto.builder()
+                        .postId(post.getId())
+                        .title(post.getTitle())
+                        .placeId(post.getPlaceId())
+                        .userId(post.getUserId())
+                        .content(post.getContent())
+                        .image(post.getImage())
+                        .createdAt(post.getCreatedAt())
+                        .updatedAt(post.getUpdatedAt())
+                        .build())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(postDtoList);
+    }
+
 
 }

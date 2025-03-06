@@ -32,6 +32,11 @@ public class CommentController {
     }
     //댓글 전체조회
 
-
+    @PostMapping("/{commentId}/like")
+    public ResponseEntity<?> toggleCommentLike(
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return commentService.toggleCommentLike(commentId, userDetails.getEmail());
+    }//댓글 좋아요
 
 }
