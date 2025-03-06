@@ -33,4 +33,6 @@ public interface HeartRepository extends JpaRepository<Heart, Long> {
     Page<ArticleEntity> findAllLikedArticlesByUserId(@Param("userId") Long userId, Pageable pageable);
 
     boolean existsByMemberIdAndArticleId(Long userId, Long id);
+
+    Optional<Heart> findByMemberIdAndArticleId(Long userId, Long id);
 }
