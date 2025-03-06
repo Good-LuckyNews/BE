@@ -10,9 +10,11 @@ public class HeartDto {
 
     private Long memberId;
     private Long articleId;
+    private boolean bookmarked;
 
     public HeartDto(Long memberId, Long articleId) {
         this.memberId = memberId;
         this.articleId = articleId;
+        this.bookmarked = bookmarked;
     }
 }
