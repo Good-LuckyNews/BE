@@ -31,4 +31,7 @@ public interface CompletedTimeRepository extends JpaRepository<CompletedTime, Lo
     @Query("SELECT c FROM CompletedTime c WHERE c.completedAt IS NOT NULL AND c.member.id = :userId")
     List<CompletedTime> findCompletedTimesAllTime(Long userId);
 
+    //completedTime 조회
+    Optional<CompletedTime> findByMemberIdAndArticleId(Long memberId, Long articleId);
+
 }

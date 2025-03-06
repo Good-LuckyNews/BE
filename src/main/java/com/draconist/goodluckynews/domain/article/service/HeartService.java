@@ -3,14 +3,17 @@ package com.draconist.goodluckynews.domain.article.service;
 import com.draconist.goodluckynews.domain.article.dto.ArticleLongContentDto;
 import com.draconist.goodluckynews.domain.article.dto.HeartDto;
 import com.draconist.goodluckynews.domain.article.entity.ArticleEntity;
+import com.draconist.goodluckynews.domain.article.entity.CompletedTime;
 import com.draconist.goodluckynews.domain.article.entity.Heart;
 import com.draconist.goodluckynews.domain.article.repository.ArticleRepository;
+import com.draconist.goodluckynews.domain.article.repository.CompletedTimeRepository;
 import com.draconist.goodluckynews.domain.article.repository.HeartRepository;
 import com.draconist.goodluckynews.domain.member.entity.Member;
 import com.draconist.goodluckynews.domain.member.repository.MemberRepository;
 import com.draconist.goodluckynews.global.enums.statuscode.ErrorStatus;
 import com.draconist.goodluckynews.global.exception.GeneralException;
 import com.draconist.goodluckynews.global.jwt.dto.CustomUserDetails;
+import com.draconist.goodluckynews.global.jwt.service.CustomUserDetailsService;
 import com.draconist.goodluckynews.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +26,7 @@ public class HeartService {
     private final HeartRepository heartRepository;
     private final MemberRepository memberRepository;
     private final ArticleRepository articleRepository;
+    private final CompletedTimeRepository completedTimeRepository;
 
     //북마크 취소 삭제
     @Transactional
@@ -59,6 +63,7 @@ public class HeartService {
     }
     private ArticleLongContentDto buildArticleLongContentDto(ArticleEntity article, Long userId) {
         boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
+        boolean isComplete = completedTimeRepository.
         return ArticleLongContentDto.builder()
                 .id(article.getId())
                 .title(article.getTitle())

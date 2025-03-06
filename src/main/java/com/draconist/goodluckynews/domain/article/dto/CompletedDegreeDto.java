@@ -17,4 +17,8 @@ public class CompletedDegreeDto {
     private Integer degree;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime completedTime;
+    public CompletedDegreeDto(Integer degree, LocalDateTime completedTime) {
+        this.degree = degree;
+        this.completedTime = completedTime;
+    }
 }
