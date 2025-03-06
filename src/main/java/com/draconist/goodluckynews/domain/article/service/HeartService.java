@@ -23,6 +23,7 @@ public class HeartService {
     private final MemberRepository memberRepository;
     private final ArticleRepository articleRepository;
 
+    //북마크 취소 삭제
     @Transactional
     public ResponseEntity<?> insert(Long articleId, Long userId) {
         // jwt확인
@@ -33,41 +34,27 @@ public class HeartService {
         ArticleEntity article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus._ARTICLE_NOT_FOUND));
 
-        // 이미 좋아요가 있다면 예외 처리
-        if (heartRepository.findByMemberAndArticle(member, article).isPresent()) {
-            throw new GeneralException(ErrorStatus._ALREADY_HEARTED);
-        }
+        // 기존 Heart 객체 확인
+        Heart heart = heartRepository.findByMemberAndArticle(member, article)
+                .orElse(new Heart(member, article, false)); // 없으면 새로 생성
 
-        // 좋아요 추가
-        Heart heart = new Heart(member, article);
-        heartRepository.save(heart);
+        //북마크가 true면 이미 북마크되어 있으면
+            if(heart.isBookmarked()) {
+                heart.setBookmarked(false);
+                heartRepository.save(heart);
+                // 게시글의 좋아요 수 갱신
+                article.updateLikeCount(false);
+                articleRepository.save(article);
+            }
+            else{ //북마크 안되어 있으면 북마크
+                heart.setBookmarked(true);
+                heartRepository.save(heart);
+                // 게시글의 좋아요 수 갱신
+                article.updateLikeCount(true);
+                articleRepository.save(article);
+            }
 
-        // 게시글의 좋아요 수 갱신
-        article.updateLikeCount(true);
-        articleRepository.save(article);
         return ResponseEntity.status(201).body(ApiResponse.onSuccess("좋아요 성공했습니다."));
     }
 
-    @Transactional
-    public ResponseEntity<?> delete(Long articleId, Long userId) {
-        // jwt확인
-        Member member = memberRepository.findById(userId)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-
-        //Article 찾기
-        ArticleEntity article = articleRepository.findById(articleId)
-                .orElseThrow(() -> new GeneralException(ErrorStatus._ARTICLE_NOT_FOUND));
-
-        Heart heart = heartRepository.findByMemberAndArticle(member, article)
-                .orElseThrow(() -> new GeneralException(ErrorStatus._HEART_NOT_FOUND));
-
-        // 좋아요 취소
-        heartRepository.delete(heart);
-
-        // 게시글의 좋아요 수 갱신
-        article.updateLikeCount(false);
-        articleRepository.save(article);
-
-        return ResponseEntity.status(201).body(ApiResponse.onSuccess("좋아요 삭제했습니다."));
-    }
 }

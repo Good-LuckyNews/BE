@@ -4,6 +4,8 @@ import com.draconist.goodluckynews.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 
@@ -51,6 +53,14 @@ public class ArticleEntity extends BaseEntity {
     @ColumnDefault("0")
     @Column(name = "likeCount")
     private Integer likeCount;
+
+    @CreatedDate  // ✅ 생성 시 자동 저장
+    @Column(updatable = false, nullable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate  // ✅ 업데이트 시 자동 갱신
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 
     public void updateLikeCount(boolean increase) {
         if (increase) {
