@@ -62,6 +62,7 @@ public class HeartService {
         ArticleLongContentDto responseDto = buildArticleLongContentDto(article,userId);
         return ResponseEntity.status(201).body(ApiResponse.onSuccess(responseDto));
     }
+
     private ArticleLongContentDto buildArticleLongContentDto(ArticleEntity article, Long userId) {
         boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
         CompletedDegreeDto completedDegreeDto = completedTimeRepository
@@ -76,8 +77,8 @@ public class HeartService {
                 .originalLink(article.getOriginalLink())
                 .image(article.getImage())
                 .keywords(article.getKeywords())
-                .completedTime(completedDegreeDto.getCompletedTime())
-                .degree(completedDegreeDto.getDegree())
+                .degree(completedDegreeDto != null ? completedDegreeDto.getDegree() : null)
+                .completedTime(completedDegreeDto != null ? completedDegreeDto.getCompletedTime() : null)
                 .originalDate(article.getOriginalDate())
                 .likeCount(article.getLikeCount())
                 .bookmarked(isBookmarked)

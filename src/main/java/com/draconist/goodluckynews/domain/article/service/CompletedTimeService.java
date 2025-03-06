@@ -283,6 +283,7 @@ import java.util.List;
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.onSuccess(responseDto));
     }
+
     private ArticleLongContentDto buildArticleLongContentDto(ArticleEntity article, Long userId) {
         boolean isBookmarked = heartRepository.existsByMemberIdAndArticleId(userId, article.getId());
         CompletedDegreeDto completedDegreeDto = completedTimeRepository
@@ -297,8 +298,8 @@ import java.util.List;
                 .originalLink(article.getOriginalLink())
                 .image(article.getImage())
                 .keywords(article.getKeywords())
-                .completedTime(completedDegreeDto.getCompletedTime())
-                .degree(completedDegreeDto.getDegree())
+                .degree(completedDegreeDto != null ? completedDegreeDto.getDegree() : null)
+                .completedTime(completedDegreeDto != null ? completedDegreeDto.getCompletedTime() : null)
                 .originalDate(article.getOriginalDate())
                 .likeCount(article.getLikeCount())
                 .bookmarked(isBookmarked)
