@@ -63,6 +63,7 @@ public class HeartService {
         return ResponseEntity.status(201).body(ApiResponse.onSuccess(responseDto));
     }
 
+    //빌드 분리
     private ArticleLongContentDto buildArticleLongContentDto(ArticleEntity article, Long userId) {
         Heart heart = heartRepository.findByMemberIdAndArticleId(userId, article.getId())
                 .orElse(null);
