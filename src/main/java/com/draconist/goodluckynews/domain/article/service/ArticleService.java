@@ -145,18 +145,19 @@ public class ArticleService {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
-        // 페이지 처리 (최신순 정렬)
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")); // createdAt 기준 내림차순 정렬
+        // 북마크된 기사 조회
+        List<ArticleEntity> bookmarkedArticles = heartRepository.findBookmarkedArticlesByUserId(userId);
 
-        // DB에서 북마크한 기사 조회
-        Page<ArticleEntity> likedArticlesPage = heartRepository.findAllLikedArticlesByUserId(userId, pageRequest);
+        // 페이지네이션 적용
+        int start = page * size;
+        int end = Math.min((page + 1) * size, bookmarkedArticles.size());
+        List<ArticleEntity> pagedArticles = bookmarkedArticles.subList(start, end);
 
         // 게시글 정보 빌드 (response.result)
-        List<ArticleZipListDto> responseDtos = new ArrayList<>();
-        for (ArticleEntity article : likedArticlesPage.getContent()) {
-            ArticleZipListDto responseDto = buildArticleZipListResponse(userId,article);
-            responseDtos.add(responseDto);
-        }
+        // 응답 DTO 변환
+        List<ArticleZipListDto> responseDtos = pagedArticles.stream()
+                .map(article -> buildArticleZipListResponse(userId, article))
+                .toList();
 
         // 응답 반환
         return ResponseEntity.status(HttpStatus.OK)

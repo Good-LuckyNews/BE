@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface HeartRepository extends JpaRepository<Heart, Long> {
@@ -28,11 +29,9 @@ public interface HeartRepository extends JpaRepository<Heart, Long> {
     @Query("UPDATE ArticleEntity a SET a.likeCount = a.likeCount - 1 WHERE a.id = :articleId AND a.userId = :userId")
     void decrementLikeCount(@Param("articleId") Long articleId, @Param("userId") Long userId);
 
-    // 회원이 좋아요를 누른 기사 조회
-    @Query("SELECT h.article FROM Heart h WHERE h.member.id = :userId ORDER BY h.article.createdAt DESC")
-    Page<ArticleEntity> findAllLikedArticlesByUserId(@Param("userId") Long userId, Pageable pageable);
-
-    boolean existsByMemberIdAndArticleId(Long userId, Long id);
+    //사용자가 북마크한 기사보기
+    @Query("SELECT h.article FROM Heart h WHERE h.member.id = :userId AND h.bookmarked = true")
+    List<ArticleEntity> findBookmarkedArticlesByUserId(@Param("userId") Long userId);
 
     Optional<Heart> findByMemberIdAndArticleId(Long userId, Long id);
 }
