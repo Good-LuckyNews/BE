@@ -23,7 +23,23 @@ public enum SuccessStatus implements BaseCode {
 	_PLACE_UPDATED(HttpStatus.OK, "PLACE200", "플레이스 수정 성공"),
 
 	// ✅ 북마크 추가/삭제(토글) 성공 응답 추가
-	_BOOKMARK_UPDATED(HttpStatus.OK, "BOOKMARK200", "북마크 상태가 업데이트되었습니다.");
+	_BOOKMARK_UPDATED(HttpStatus.OK, "BOOKMARK200", "북마크 상태가 업데이트되었습니다."),
+
+	// ✅ 게시글(희소식) 관련 응답 추가
+	POST_CREATED(HttpStatus.CREATED, "POST201", "게시글이 성공적으로 생성되었습니다."),
+	POST_DELETED(HttpStatus.OK, "POST202", "게시글이 성공적으로 삭제되었습니다."),
+	POST_UPDATED(HttpStatus.OK, "POST203", "게시글이 성공적으로 수정되었습니다."),
+	POST_LIKE_SUCCESS(HttpStatus.OK, "POST204", "게시글 좋아요 처리가 완료되었습니다."),
+	POST_LIST_SUCCESS(HttpStatus.OK, "POST205", "게시글 목록이 성공적으로 조회되었습니다."),
+	POST_DETAIL_SUCCESS(HttpStatus.OK, "POST206", "게시글 상세 정보가 성공적으로 조회되었습니다."),
+
+	// ✅ 댓글 관련 응답 추가
+	COMMENT_CREATED(HttpStatus.CREATED, "COMMENT201", "댓글이 성공적으로 생성되었습니다."),
+	COMMENT_DELETED(HttpStatus.OK, "COMMENT202", "댓글이 성공적으로 삭제되었습니다."),
+	COMMENT_UPDATED(HttpStatus.OK, "COMMENT203", "댓글이 성공적으로 수정되었습니다."),
+	COMMENT_LIKE_SUCCESS(HttpStatus.OK, "COMMENT204", "댓글 좋아요 처리가 완료되었습니다."),
+	COMMENT_LIST_SUCCESS(HttpStatus.OK, "COMMENT205", "댓글 목록이 성공적으로 조회되었습니다."),
+	COMMENT_DETAIL_SUCCESS(HttpStatus.OK, "COMMENT206", "댓글 상세 정보가 성공적으로 조회되었습니다.");
 
 
 	private final HttpStatus httpStatus;

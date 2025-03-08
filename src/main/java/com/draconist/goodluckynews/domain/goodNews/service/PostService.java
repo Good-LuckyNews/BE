@@ -7,6 +7,8 @@ import com.draconist.goodluckynews.domain.goodNews.repository.PostRepository;
 import com.draconist.goodluckynews.domain.goodNews.repository.PostLikeRepository;
 import com.draconist.goodluckynews.domain.member.entity.Member;
 import com.draconist.goodluckynews.domain.member.repository.MemberRepository;
+import com.draconist.goodluckynews.global.enums.statuscode.ErrorStatus;
+import com.draconist.goodluckynews.global.enums.statuscode.SuccessStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,33 +28,25 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
 
     public ResponseEntity<?> createPost(PostDto postDto, String email) {
-        // 1. 이메일로 사용자 조회
-        Member user = memberRepository.findMemberByEmail(email)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        try {
+            Member user = memberRepository.findMemberByEmail(email)
+                    .orElseThrow(() -> new RuntimeException(ErrorStatus.MEMBER_NOT_FOUND.getMessage()));
 
-        // 2. Post Entity 변환 및 저장
-        Post post = Post.createPost(postDto.getTitle(), postDto.getPlaceId(), user.getId(), postDto.getContent(), postDto.getImage());
-        postRepository.save(post);
+            Post post = Post.createPost(postDto.getTitle(), postDto.getPlaceId(), user.getId(), postDto.getContent(), postDto.getImage());
+            postRepository.save(post);
 
-        // 3. 저장된 게시글을 DTO로 변환하여 반환
-        PostDto responseDto = PostDto.builder()
-                .postId(post.getId())
-                .title(post.getTitle())  // 제목 추가
-                .placeId(post.getPlaceId())
-                .userId(post.getUserId())
-                .content(post.getContent())
-                .image(post.getImage())
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
-                .build();
-
-        return ResponseEntity.ok(responseDto);
+            return ResponseEntity.status(SuccessStatus.POST_CREATED.getHttpStatus()).body(SuccessStatus.POST_CREATED);
+        } catch (Exception e) {
+            return ResponseEntity.status(ErrorStatus.POST_CREATION_FAILED.getHttpStatus())
+                    .body(ErrorStatus.POST_CREATION_FAILED);
+        }
     }
 
     public ResponseEntity<?> getPostById(Long postId) {
         // 1. 게시글 조회 (없으면 예외 발생)
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException(ErrorStatus.POST_NOT_FOUND.getMessage()));
+
 
         // 2. 조회된 게시글을 DTO로 변환하여 반환
         PostDto postDto = PostDto.builder()
@@ -91,7 +85,7 @@ public class PostService {
                 .collect(Collectors.toList());
 
         // 4. 응답 데이터 생성
-        return ResponseEntity.ok(postDtoList);
+        return ResponseEntity.status(SuccessStatus.POST_LIST_SUCCESS.getHttpStatus()).body(postDtoList);
     }
 
     public ResponseEntity<?> togglePostLike(Long postId, String email) {
@@ -139,7 +133,7 @@ public class PostService {
                         .build())
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(postDtoList);
+        return ResponseEntity.status(SuccessStatus.POST_LIST_SUCCESS.getHttpStatus()).body(postDtoList);
     }
 
     public ResponseEntity<?> getMyPosts(String email) {
@@ -164,7 +158,7 @@ public class PostService {
                         .build())
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(postDtoList);
+        return ResponseEntity.status(SuccessStatus.POST_LIST_SUCCESS.getHttpStatus()).body(postDtoList);
     }
 
 
