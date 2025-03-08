@@ -48,5 +48,8 @@ public class PostController {
         return postService.getMyPosts(userDetails.getEmail());
     }//내가 쓴 페이지 조회
 
-
+    @GetMapping("/search")
+    public ResponseEntity<?> searchPosts(@RequestParam String query) {
+        return postService.searchPostsByTitle(query);
+    }// 희소식 검색 (게시글 제목 기준)
 }
