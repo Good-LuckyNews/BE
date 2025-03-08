@@ -3,12 +3,13 @@ package com.draconist.goodluckynews.domain.goodNews.service;
 import com.draconist.goodluckynews.domain.goodNews.dto.CommentDto;
 import com.draconist.goodluckynews.domain.goodNews.entity.Comment;
 import com.draconist.goodluckynews.domain.goodNews.entity.CommentLike;
-import com.draconist.goodluckynews.domain.goodNews.entity.Post;
 import com.draconist.goodluckynews.domain.goodNews.repository.CommentLikeRepository;
 import com.draconist.goodluckynews.domain.goodNews.repository.CommentRepository;
 import com.draconist.goodluckynews.domain.goodNews.repository.PostRepository;
 import com.draconist.goodluckynews.domain.member.entity.Member;
 import com.draconist.goodluckynews.domain.member.repository.MemberRepository;
+import com.draconist.goodluckynews.global.enums.statuscode.ErrorStatus;
+import com.draconist.goodluckynews.global.enums.statuscode.SuccessStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -26,39 +27,32 @@ public class CommentService {
     private final MemberRepository memberRepository;
 
     public ResponseEntity<?> createComment(CommentDto commentDto, String email) {
-        // 1. 사용자 조회
-        Member user = memberRepository.findMemberByEmail(email)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        try {
+            Member user = memberRepository.findMemberByEmail(email)
+                    .orElseThrow(() -> new RuntimeException(ErrorStatus.MEMBER_NOT_FOUND.getMessage()));
 
-        // 2. 게시글 조회 (존재 여부 확인)
-        Post post = postRepository.findById(commentDto.getPostId())
-                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+            postRepository.findById(commentDto.getPostId())
+                    .orElseThrow(() -> new RuntimeException(ErrorStatus.POST_NOT_FOUND.getMessage()));
 
-        // 3. Comment Entity 변환 및 저장
-        Comment comment = Comment.builder()
-                .postId(commentDto.getPostId())
-                .userId(user.getId())
-                .content(commentDto.getContent())
-                .build();
-        commentRepository.save(comment);
+            Comment comment = Comment.builder()
+                    .postId(commentDto.getPostId())
+                    .userId(user.getId())
+                    .content(commentDto.getContent())
+                    .build();
+            commentRepository.save(comment);
 
-        // 4. 저장된 댓글을 DTO로 변환하여 반환 (likeCount 초기값 0)
-        CommentDto responseDto = CommentDto.builder()
-                .commentId(comment.getId())
-                .postId(comment.getPostId())
-                .userId(comment.getUserId())
-                .content(comment.getContent())
-                .createdAt(comment.getCreatedAt())
-                .likeCount(0) // 새로 생성된 댓글은 기본적으로 좋아요 0
-                .build();
-
-        return ResponseEntity.ok(responseDto);
+            return ResponseEntity.status(SuccessStatus.COMMENT_CREATED.getHttpStatus()).body(SuccessStatus.COMMENT_CREATED);
+        } catch (Exception e) {
+            return ResponseEntity.status(ErrorStatus.COMMENT_CREATION_FAILED.getHttpStatus())
+                    .body(ErrorStatus.COMMENT_CREATION_FAILED);
+        }
     }
+
 
     public ResponseEntity<?> getMyComments(String email) {
         // 1. 사용자 조회
         Member user = memberRepository.findMemberByEmail(email)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException(ErrorStatus.MEMBER_NOT_FOUND.getMessage()));
 
         // 2. 사용자가 작성한 모든 댓글 조회
         List<Comment> comments = commentRepository.findByUserId(user.getId());
@@ -100,11 +94,11 @@ public class CommentService {
     public ResponseEntity<?> toggleCommentLike(Long commentId, String email) {
         // 1. 사용자 조회
         Member user = memberRepository.findMemberByEmail(email)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException(ErrorStatus.MEMBER_NOT_FOUND.getMessage()));
 
         // 2. 댓글 조회
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException(ErrorStatus.COMMENT_NOT_FOUND.getMessage()));
 
         // 3. 사용자가 해당 댓글에 좋아요를 눌렀는지 확인
         Optional<CommentLike> existingLike = commentLikeRepository.findByUserIdAndCommentId(user.getId(), commentId);
@@ -112,7 +106,7 @@ public class CommentService {
         if (existingLike.isPresent()) {
             // 좋아요가 이미 존재하면 삭제 (좋아요 취소)
             commentLikeRepository.delete(existingLike.get());
-            return ResponseEntity.ok("좋아요 취소됨");
+            return ResponseEntity.ok(SuccessStatus.COMMENT_LIKE_SUCCESS);
         } else {
             // 좋아요가 없으면 추가
             CommentLike newLike = CommentLike.builder()
@@ -120,7 +114,7 @@ public class CommentService {
                     .commentId(commentId)
                     .build();
             commentLikeRepository.save(newLike);
-            return ResponseEntity.ok("좋아요 추가됨");
+            return ResponseEntity.ok(SuccessStatus.COMMENT_LIKE_SUCCESS);
         }
     }
 }

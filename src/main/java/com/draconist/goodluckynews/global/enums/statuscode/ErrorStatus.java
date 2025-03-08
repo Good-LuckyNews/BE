@@ -31,6 +31,17 @@ public enum ErrorStatus implements BaseCode {
 	TOKEN_ERROR(HttpStatus.UNAUTHORIZED, "TOKEN4001", "토큰이 없거나 만료 되었습니다."),
 	TOKEN_NO_AUTHORIZATION(HttpStatus.UNAUTHORIZED, "TOKEN4002", "토큰에 권한이 없습니다."),
 
+	// ✅ 게시글(희소식) 관련 오류 추가
+	POST_NOT_FOUND(HttpStatus.NOT_FOUND, "POST4001", "해당하는 게시글을 찾을 수 없습니다."),
+	POST_CREATION_FAILED(HttpStatus.BAD_REQUEST, "POST4002", "게시글을 생성하는 중 오류가 발생하였습니다."),
+	POST_LIKE_FAILED(HttpStatus.BAD_REQUEST, "POST4003", "게시글 좋아요 처리 중 오류가 발생하였습니다."),
+
+	// ✅ 댓글 관련 오류 추가
+	COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMENT4001", "해당하는 댓글을 찾을 수 없습니다."),
+	COMMENT_CREATION_FAILED(HttpStatus.BAD_REQUEST, "COMMENT4002", "댓글을 생성하는 중 오류가 발생하였습니다."),
+	COMMENT_LIKE_FAILED(HttpStatus.BAD_REQUEST, "COMMENT4003", "댓글 좋아요 처리 중 오류가 발생하였습니다."),
+
+
 	// **✅ 추가된 Article 관련 오류**
 	_CRAWLFAILED(HttpStatus.INTERNAL_SERVER_ERROR, "ARTICLE4001", "기사 크롤링 중 오류가 발생했습니다."),
 	_ARTICLE_TITLE_MISSING(HttpStatus.BAD_REQUEST, "ARTICLE4002", "기사 제목이 누락되었습니다."),
