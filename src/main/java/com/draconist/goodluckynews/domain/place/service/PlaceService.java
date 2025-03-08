@@ -108,6 +108,7 @@ public class PlaceService {
         // 4. 조회된 데이터를 DTO로 변환
         Page<PlaceDTO> placeDTOPage = placePage.map(place ->
                 PlaceDTO.builder()
+                        .placeId(place.getId())  // 🔹 placeId 추가
                         .placeName(place.getPlaceName())
                         .placeDetails(place.getPlaceDetails())
                         .placeImg(place.getPlaceImg())
@@ -128,10 +129,12 @@ public class PlaceService {
 
         // 2. DTO로 변환
         PlaceDTO placeDTO = PlaceDTO.builder()
+                .placeId(place.getId())  // 🔹 placeId 추가
                 .placeName(place.getPlaceName())
                 .placeDetails(place.getPlaceDetails())
                 .placeImg(place.getPlaceImg())
                 .build();
+
 
         // 3. 성공 응답 반환
         return ResponseEntity.ok(ApiResponse.onSuccess(
