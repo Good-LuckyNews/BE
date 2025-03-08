@@ -62,7 +62,11 @@ public class Member extends BaseEntity {
 
     // 프로필 이미지 저장
     public void changeProfileImage(String profileImage) {
-        this.profileImage = profileImage;
+        if (profileImage != null && !profileImage.isEmpty()) { // null이 아니고 빈 문자열이 아닌 경우
+            this.profileImage = profileImage;
+        } else {
+            this.profileImage = null; // null이거나 빈 문자열이면 null로 설정
+        }
     }
 
     // 회원 정보 수정 메소드
@@ -82,5 +86,6 @@ public class Member extends BaseEntity {
         if(userInfoDTO.getKeywords() != null) {  // keywords 업데이트
             this.keywords = userInfoDTO.getKeywords();
         }
+
     }
 }
