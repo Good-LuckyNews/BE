@@ -51,5 +51,5 @@ public class PostController {
     @GetMapping("/search")
     public ResponseEntity<?> searchPosts(@RequestParam String query) {
         return postService.searchPostsByTitle(query);
-    }// 희소식 검색 (게시글 제목 기준)
+    }// 희소식 검색 (게시글 제목 기준으로)
 }
