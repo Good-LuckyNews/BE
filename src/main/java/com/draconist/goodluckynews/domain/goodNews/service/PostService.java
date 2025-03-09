@@ -3,6 +3,7 @@ package com.draconist.goodluckynews.domain.goodNews.service;
 import com.draconist.goodluckynews.domain.goodNews.dto.PostDto;
 import com.draconist.goodluckynews.domain.goodNews.entity.Post;
 import com.draconist.goodluckynews.domain.goodNews.entity.PostLike;
+import com.draconist.goodluckynews.domain.goodNews.repository.CommentRepository;
 import com.draconist.goodluckynews.domain.goodNews.repository.PostRepository;
 import com.draconist.goodluckynews.domain.goodNews.repository.PostLikeRepository;
 import com.draconist.goodluckynews.domain.member.entity.Member;
@@ -24,8 +25,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
-    private final MemberRepository memberRepository;
     private final PostLikeRepository postLikeRepository;
+    private final CommentRepository commentRepository;
+    private final MemberRepository memberRepository;
 
     public ResponseEntity<?> createPost(PostDto postDto, String email) {
         try {
@@ -137,14 +139,11 @@ public class PostService {
     }
 
     public ResponseEntity<?> getMyPosts(String email) {
-        // 1. 사용자 조회
         Member user = memberRepository.findMemberByEmail(email)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        // 2. 사용자가 작성한 모든 게시글 조회
         List<Post> posts = postRepository.findByUserId(user.getId());
 
-        // 3. 조회된 게시글을 DTO로 변환하여 리스트로 반환
         List<PostDto> postDtoList = posts.stream()
                 .map(post -> PostDto.builder()
                         .postId(post.getId())
@@ -155,11 +154,14 @@ public class PostService {
                         .image(post.getImage())
                         .createdAt(post.getCreatedAt())
                         .updatedAt(post.getUpdatedAt())
+                        .likeCount(postLikeRepository.countByPostId(post.getId())) // 좋아요 개수 추가
+                        .commentCount(commentRepository.countByPostId(post.getId())) // 댓글 개수 수정
                         .build())
                 .collect(Collectors.toList());
 
-        return ResponseEntity.status(SuccessStatus.POST_LIST_SUCCESS.getHttpStatus()).body(postDtoList);
+        return ResponseEntity.ok(postDtoList);
     }
+
 
 
 }
