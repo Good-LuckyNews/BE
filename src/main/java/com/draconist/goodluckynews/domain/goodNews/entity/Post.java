@@ -43,9 +43,8 @@ public class Post {
     @UpdateTimestamp
     private LocalDateTime updatedAt; // 수정 날짜
 
-    public static Post createPost(String title, Long placeId, Long userId, String content, String image) {
+    public static Post createPost(Long placeId, Long userId, String content, String image) {
         return Post.builder()
-                .title(title) // 제목 추가
                 .placeId(placeId)
                 .userId(userId)
                 .content(content)

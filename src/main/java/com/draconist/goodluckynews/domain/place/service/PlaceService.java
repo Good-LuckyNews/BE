@@ -4,6 +4,7 @@ import com.draconist.goodluckynews.domain.member.entity.Member;
 import com.draconist.goodluckynews.domain.member.repository.MemberRepository;
 import com.draconist.goodluckynews.domain.place.dto.PlaceDTO;
 import com.draconist.goodluckynews.domain.place.entity.Place;
+import com.draconist.goodluckynews.domain.place.repository.PlaceLikeRepository;
 import com.draconist.goodluckynews.domain.place.repository.PlaceRepository;
 import com.draconist.goodluckynews.global.awss3.service.AwsS3Service;
 import com.draconist.goodluckynews.global.enums.statuscode.ErrorStatus;
@@ -21,6 +22,8 @@ import org.springframework.data.domain.Pageable;
 
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +31,7 @@ public class PlaceService {
     private final MemberRepository memberRepository;
     private final PlaceRepository placeRepository;
     private final AwsS3Service awsS3Service;
+    private final PlaceLikeRepository placeLikeRepository;
 
     public ResponseEntity<?> createPlace(MultipartFile image, PlaceDTO placeDTO, String email)throws IOException {
         //1. 이메일로 회원 정보 찾기
@@ -203,5 +207,36 @@ public class PlaceService {
         return ResponseEntity.status(SuccessStatus._BOOKMARK_UPDATED.getHttpStatus())
                 .body(ApiResponse.onSuccess(SuccessStatus._BOOKMARK_UPDATED.getMessage(), message));
     }//플레이스 북마크
+
+    public ResponseEntity<?> getMyPlaces(String email) {
+        // 1. 사용자 정보 조회
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        // 2. 사용자가 생성한 플레이스 조회
+        List<Place> places = placeRepository.findByUserId(member.getId());
+
+        // 3. DTO 변환 및 좋아요 정보 추가
+        List<PlaceDTO> placeDTOList = places.stream()
+                .map(place -> {
+                    int likeCount = placeLikeRepository.countByPlaceId(place.getId()); // 좋아요 개수 조회
+                    boolean isLiked = placeLikeRepository.existsByPlaceIdAndUserId(place.getId(), member.getId()); // 내가 좋아요 눌렀는지 확인
+
+                    return PlaceDTO.builder()
+                            .placeId(place.getId())
+                            .placeName(place.getPlaceName())
+                            .placeDetails(place.getPlaceDetails())
+                            .placeImg(place.getPlaceImg())
+                            .likeCount(likeCount) // 좋아요 개수 추가
+                            .isLiked(isLiked) // 내가 좋아요 눌렀는지 추가
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(ApiResponse.onSuccess(
+                SuccessStatus._PLACE_MYLIST_SUCCESS.getMessage(),
+                placeDTOList
+        ));
+    }//내가 만든 플레이스 조회
 
 }
