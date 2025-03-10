@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @Builder
 public class PostDto {
     private Long postId;       // 게시글 ID
-    private String title;      // 게시글 제목
     private Long placeId;      // 게시글이 속한 장소 ID
     private Long userId;       // 게시글 작성자 ID
     private String content;    // 게시글 내용

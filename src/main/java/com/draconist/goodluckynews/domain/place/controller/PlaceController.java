@@ -30,7 +30,6 @@ public class PlaceController {
         return placeService.deletePlace(placeId, customUserDetails.getEmail());
     } //플레이스 삭제
 
-
     @GetMapping
     public ResponseEntity<?> getAllPlaces(
             @RequestParam(defaultValue = "0") int page,  // 기본값 0
@@ -68,5 +67,10 @@ public class PlaceController {
         @AuthenticationPrincipal CustomUserDetails customUserDetails) {
     return placeService.toggleBookmark(placeId, customUserDetails.getEmail());
     }//플레이스 북마크
+
+    @GetMapping("/mypage")
+    public ResponseEntity<?> getMyPlaces(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return placeService.getMyPlaces(customUserDetails.getEmail());
+    }// 내가 만든 플레이스 조회
 
 }

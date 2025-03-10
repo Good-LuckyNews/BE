@@ -5,9 +5,11 @@ import com.draconist.goodluckynews.domain.goodNews.dto.PostDto;
 import com.draconist.goodluckynews.domain.goodNews.service.PostService;
 import com.draconist.goodluckynews.global.jwt.dto.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -15,13 +17,15 @@ import org.springframework.web.bind.annotation.*;
 public class PostController {
     private final PostService postService;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE) // ✅ Multipart 요청 허용
     public ResponseEntity<?> createPost(
-            @RequestBody PostDto postDto,
+            @RequestParam("placeId") Long placeId,
+            @RequestParam("content") String content,
+            @RequestPart(value = "image", required = false) MultipartFile image,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return postService.createPost(postDto, userDetails.getEmail());
-    }//희소식 생성
 
+        return postService.createPost(placeId, content, image, userDetails.getEmail());
+    }//희소식 생성
 
     @GetMapping("/{postId}")
     public ResponseEntity<?> getPostById(@PathVariable Long postId) {
@@ -50,6 +54,15 @@ public class PostController {
 
     @GetMapping("/search")
     public ResponseEntity<?> searchPosts(@RequestParam String query) {
-        return postService.searchPostsByTitle(query);
-    }// 희소식 검색 (게시글 제목 기준으로)
+        return postService.searchPostsByContent(query);
+    }// 희소식 검색 (게시글 내용 기준으로)
+
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<?> deletePost(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return postService.deletePost(postId, userDetails.getEmail());
+    }//희소식 삭제
+
+
 }
