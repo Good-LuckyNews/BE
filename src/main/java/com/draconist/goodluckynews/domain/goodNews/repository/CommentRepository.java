@@ -12,5 +12,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByUserId(Long userId);
     Page<Comment> findAll(Pageable pageable); // 페이지네이션을 적용한 전체 댓글 조회
     int countByPostId(Long id);//댓글 수
+    void deleteByPostId(Long postId); // 희소식 삭제 연관
+    void deleteById(Long commentId);// 댓글 삭제
 }
 

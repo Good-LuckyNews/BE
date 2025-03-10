@@ -19,6 +19,10 @@ public enum SuccessStatus implements BaseCode {
 	// 특정 플레이스 조회 성공 응답 추가
 	_PLACE_DETAIL_SUCCESS(HttpStatus.OK, "PLACE200", "플레이스 상세 정보 조회 성공"),
 
+	// ✅ 내가 만든 플레이스 조회 성공 응답 추가
+	_PLACE_MYLIST_SUCCESS(HttpStatus.OK, "PLACE207", "내가 만든 플레이스 조회 성공"),
+
+
 	// 플레이스 수정 성공 응답 추가
 	_PLACE_UPDATED(HttpStatus.OK, "PLACE200", "플레이스 수정 성공"),
 
