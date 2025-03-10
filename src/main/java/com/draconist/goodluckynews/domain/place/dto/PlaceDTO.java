@@ -11,4 +11,6 @@ public class PlaceDTO {
     private String placeName;
     private String placeDetails;
     private String placeImg;
+    private int likeCount; // 좋아요 수 추가
+    private boolean isLiked; // 좋아요 여부
 }
