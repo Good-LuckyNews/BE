@@ -120,7 +120,7 @@ public class PlaceService {
                 SuccessStatus._PLACE_PAGINATION_SUCCESS.getMessage(),
                 placeDTOPage
         ));
-    }//플레이스 전체 조회
+    }//플레이스 전체 조회 ( 페이지네이션 )
 
     public ResponseEntity<?> getPlaceById(Long placeId) {
         // 1. placeId로 Place 조회 (없으면 예외 발생)
