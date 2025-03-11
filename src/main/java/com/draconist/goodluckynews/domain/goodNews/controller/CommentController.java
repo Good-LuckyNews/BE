@@ -54,4 +54,13 @@ public class CommentController {
         return commentService.commentAlarm(userDetails.getEmail());
     }//내 댓글에 달린 댓글
 
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<?> deleteComment(
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return commentService.deleteComment(commentId, userDetails.getEmail());
+    }
+
+
+
 }
