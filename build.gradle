@@ -52,6 +52,9 @@ dependencies {
 	//jsoup 설정
 	implementation 'org.jsoup:jsoup:1.16.2'
 
+	//푸시 알람
+	implementation 'com.google.firebase:firebase-admin:9.2.0'           // Google Firebase Admin
+	implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'     // Jackson Data Bind
 }
 
 
