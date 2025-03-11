@@ -4,6 +4,7 @@ package com.draconist.goodluckynews.domain.goodNews.controller;
 import com.draconist.goodluckynews.domain.goodNews.dto.PostDto;
 import com.draconist.goodluckynews.domain.goodNews.service.PostService;
 import com.draconist.goodluckynews.global.jwt.dto.CustomUserDetails;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,14 +18,14 @@ import org.springframework.web.multipart.MultipartFile;
 public class PostController {
     private final PostService postService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE) // ✅ Multipart 요청 허용
+    @PostMapping() // ✅ Multipart 요청 허용
     public ResponseEntity<?> createPost(
-            @RequestParam("placeId") Long placeId,
-            @RequestParam("content") String content,
             @RequestPart(value = "image", required = false) MultipartFile image,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @ModelAttribute PostDto postDto
+    ) {
 
-        return postService.createPost(placeId, content, image, userDetails.getEmail());
+        return postService.createPost(postDto, image, userDetails.getEmail());
     }//희소식 생성
 
     @GetMapping("/{postId}")
