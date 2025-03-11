@@ -32,4 +32,8 @@ public class Comment {
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt; // 댓글 작성 시간
+
+    @ManyToOne
+    @JoinColumn(name = "parent_comment_id")
+    private Comment parentComment;
 }
