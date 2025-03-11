@@ -9,6 +9,8 @@ import com.draconist.goodluckynews.domain.goodNews.repository.PostRepository;
 import com.draconist.goodluckynews.domain.goodNews.repository.PostLikeRepository;
 import com.draconist.goodluckynews.domain.member.entity.Member;
 import com.draconist.goodluckynews.domain.member.repository.MemberRepository;
+import com.draconist.goodluckynews.domain.place.entity.Place;
+import com.draconist.goodluckynews.domain.place.repository.PlaceRepository;
 import com.draconist.goodluckynews.global.awss3.service.AwsS3Service;
 import com.draconist.goodluckynews.global.enums.statuscode.ErrorStatus;
 import com.draconist.goodluckynews.global.enums.statuscode.SuccessStatus;
@@ -34,6 +36,7 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final MemberRepository memberRepository;
     private final AwsS3Service awsS3Service;
+    private final PlaceRepository placeRepository;
 
     public ResponseEntity<?> createPost(GoodnewsDto goodnewsDto, MultipartFile image, String email) {
         try {
@@ -205,5 +208,27 @@ public class PostService {
                 "게시글이 성공적으로 삭제되었습니다."
         ));
     }//희소식 삭제
+
+    public List<PostDto> getPostsByPlace(Long placeId) {
+        // 1. 플레이스 존재 여부 확인
+        Place place = placeRepository.findById(placeId)
+                .orElseThrow(() -> new RuntimeException("해당 플레이스를 찾을 수 없습니다."));
+
+        // 2. 플레이스에 속한 게시글 조회
+        return postRepository.findByPlaceIdOrderByCreatedAtDesc(placeId)
+                .stream()
+                .map(post -> PostDto.builder()
+                        .postId(post.getId())
+                        .placeId(post.getPlaceId())
+                        .placeName(place.getPlaceName())  // 🔹 플레이스명 추가
+                        .content(post.getContent())
+                        .image(post.getImage())
+                        .createdAt(post.getCreatedAt())
+                        .updatedAt(post.getUpdatedAt())
+                        .likeCount(postLikeRepository.countByPostId(post.getId()))
+                        .commentCount(commentRepository.countByPostId(post.getId()))
+                        .build())
+                .collect(Collectors.toList());
+    }//플레이스별 희소식 조회
 
 }
