@@ -64,4 +64,7 @@ public class PostController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         return postService.deletePost(postId, userDetails.getEmail());
     }//희소식 삭제
+
+
+
 }

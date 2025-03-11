@@ -8,4 +8,4 @@ import lombok.*;
 public class GoodnewsDto {
     private Long placeId;      // 게시글이 속한 장소 ID
     private String content;    // 게시글 내용
-}
+}//생성 전용 dto
