@@ -1,12 +1,11 @@
 package com.draconist.goodluckynews.domain.goodNews.controller;
 
 
-import com.draconist.goodluckynews.domain.goodNews.dto.PostDto;
+import com.draconist.goodluckynews.domain.goodNews.dto.GoodnewsDto;
 import com.draconist.goodluckynews.domain.goodNews.service.PostService;
 import com.draconist.goodluckynews.global.jwt.dto.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -22,10 +21,10 @@ public class PostController {
     public ResponseEntity<?> createPost(
             @RequestPart(value = "image", required = false) MultipartFile image,
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Valid @ModelAttribute PostDto postDto
+            @Valid @ModelAttribute GoodnewsDto goodnewsDto
     ) {
 
-        return postService.createPost(postDto, image, userDetails.getEmail());
+        return postService.createPost(goodnewsDto, image, userDetails.getEmail());
     }//희소식 생성
 
     @GetMapping("/{postId}")

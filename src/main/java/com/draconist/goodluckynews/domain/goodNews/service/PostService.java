@@ -1,5 +1,6 @@
 package com.draconist.goodluckynews.domain.goodNews.service;
 
+import com.draconist.goodluckynews.domain.goodNews.dto.GoodnewsDto;
 import com.draconist.goodluckynews.domain.goodNews.dto.PostDto;
 import com.draconist.goodluckynews.domain.goodNews.entity.Post;
 import com.draconist.goodluckynews.domain.goodNews.entity.PostLike;
@@ -32,25 +33,23 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final CommentRepository commentRepository;
     private final MemberRepository memberRepository;
-    private final AwsS3Service awsS3Service; // ✅ S3 파일 업로드 서비스 추가
+    private final AwsS3Service awsS3Service;
 
-    public ResponseEntity<?> createPost(PostDto postDto, MultipartFile image, String email) {
+    public ResponseEntity<?> createPost(GoodnewsDto goodnewsDto, MultipartFile image, String email) {
         try {
             Member user = memberRepository.findMemberByEmail(email)
                     .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
-            // ✅ 이미지 업로드 후 URL 변환 (이미지가 있을 경우)
             String imageUrl = null;
             if (image != null && !image.isEmpty()) {
-                imageUrl = awsS3Service.uploadFile(image); // ✅ 업로드 후 URL 반환
+                imageUrl = awsS3Service.uploadFile(image);
             }
 
-            // ✅ 게시글 생성 후 저장 (이미지는 URL 형식으로 DB에 저장)
             Post post = Post.builder()
-                    .placeId(postDto.getPlaceId())
+                    .placeId(goodnewsDto.getPlaceId())
                     .userId(user.getId())
-                    .content(postDto.getContent())
-                    .image(imageUrl) // ✅ URL 저장
+                    .content(goodnewsDto.getContent())
+                    .image(imageUrl)
                     .build();
 
             postRepository.save(post);
