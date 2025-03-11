@@ -43,7 +43,9 @@ public enum SuccessStatus implements BaseCode {
 	COMMENT_UPDATED(HttpStatus.OK, "COMMENT203", "댓글이 성공적으로 수정되었습니다."),
 	COMMENT_LIKE_SUCCESS(HttpStatus.OK, "COMMENT204", "댓글 좋아요 처리가 완료되었습니다."),
 	COMMENT_LIST_SUCCESS(HttpStatus.OK, "COMMENT205", "댓글 목록이 성공적으로 조회되었습니다."),
-	COMMENT_DETAIL_SUCCESS(HttpStatus.OK, "COMMENT206", "댓글 상세 정보가 성공적으로 조회되었습니다.");
+	COMMENT_DETAIL_SUCCESS(HttpStatus.OK, "COMMENT206", "댓글 상세 정보가 성공적으로 조회되었습니다."),
+	COMMENT_REPLIES_FOUND(HttpStatus.OK, "COMMENT207", "대댓글 목록을 성공적으로 가져왔습니다."),
+	NO_REPLIES_FOUND(HttpStatus.OK, "COMMENT208", "해당 댓글에 달린 댓글이 없습니다" );
 
 
 	private final HttpStatus httpStatus;
