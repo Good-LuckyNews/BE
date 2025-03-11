@@ -157,24 +157,26 @@ public class PostService {
         Member user = memberRepository.findMemberByEmail(email)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        List<Post> posts = postRepository.findByUserId(user.getId());
+        List<Post> posts = postRepository.findByUserIdWithPlace(user.getId());
 
         List<PostDto> postDtoList = posts.stream()
                 .map(post -> PostDto.builder()
                         .postId(post.getId())
                         .placeId(post.getPlaceId())
+                        .placeName(post.getPlace().getPlaceName())  // 🔹 플레이스 제목 추가
                         .userId(post.getUserId())
                         .content(post.getContent())
                         .image(post.getImage())
                         .createdAt(post.getCreatedAt())
                         .updatedAt(post.getUpdatedAt())
-                        .likeCount(postLikeRepository.countByPostId(post.getId())) // 좋아요 개수 추가
-                        .commentCount(commentRepository.countByPostId(post.getId())) // 댓글 개수 수정
+                        .likeCount(postLikeRepository.countByPostId(post.getId()))
+                        .commentCount(commentRepository.countByPostId(post.getId()))
                         .build())
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(postDtoList);
     }
+
 
     public ResponseEntity<?> deletePost(Long postId, String email) {
         // 1. 사용자 정보 조회
