@@ -19,11 +19,10 @@ public class PostController {
 
     @PostMapping() // ✅ Multipart 요청 허용
     public ResponseEntity<?> createPost(
-            @RequestPart(value = "image", required = false) MultipartFile image,
             @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(value = "image", required = false) MultipartFile image,
             @Valid @ModelAttribute GoodnewsDto goodnewsDto
     ) {
-
         return postService.createPost(goodnewsDto, image, userDetails.getEmail());
     }//희소식 생성
 
