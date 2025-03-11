@@ -2,10 +2,7 @@ package com.draconist.goodluckynews.domain.goodNews.dto;
 
 import lombok.*;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 @Builder
 public class GoodnewsDto {
     private String title; // 게시글 제목
