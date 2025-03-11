@@ -46,7 +46,6 @@ public class PostService {
                     .orElse(null);
 
             Post post = Post.builder()
-                    .title(goodnewsDto.getTitle())  // title 필드 추가
                     .placeId(goodnewsDto.getPlaceId())
                     .userId(user.getId())
                     .content(goodnewsDto.getContent())
