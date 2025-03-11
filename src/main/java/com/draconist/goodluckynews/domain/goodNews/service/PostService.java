@@ -40,12 +40,13 @@ public class PostService {
             Member user = memberRepository.findMemberByEmail(email)
                     .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
-            String imageUrl = null;
-            if (image != null && !image.isEmpty()) {
-                imageUrl = awsS3Service.uploadFile(image);
-            }
+            String imageUrl = Optional.ofNullable(image)
+                    .filter(f -> !f.isEmpty())
+                    .map(f -> awsS3Service.uploadFile(f))
+                    .orElse(null);
 
             Post post = Post.builder()
+                    .title(goodnewsDto.getTitle())  // title 필드 추가
                     .placeId(goodnewsDto.getPlaceId())
                     .userId(user.getId())
                     .content(goodnewsDto.getContent())
