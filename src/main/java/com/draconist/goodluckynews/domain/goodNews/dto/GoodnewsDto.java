@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class goodnewsDto {
+public class GoodnewsDto {
     private String title; // 게시글 제목
     private Long placeId;      // 게시글이 속한 장소 ID
     private String content;    // 게시글 내용
