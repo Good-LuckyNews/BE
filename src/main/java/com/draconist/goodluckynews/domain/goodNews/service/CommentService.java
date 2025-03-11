@@ -11,6 +11,8 @@ import com.draconist.goodluckynews.domain.goodNews.repository.PostLikeRepository
 import com.draconist.goodluckynews.domain.goodNews.repository.PostRepository;
 import com.draconist.goodluckynews.domain.member.entity.Member;
 import com.draconist.goodluckynews.domain.member.repository.MemberRepository;
+import com.draconist.goodluckynews.domain.place.entity.Place;
+import com.draconist.goodluckynews.domain.place.repository.PlaceRepository;
 import com.draconist.goodluckynews.global.enums.statuscode.ErrorStatus;
 import com.draconist.goodluckynews.global.enums.statuscode.SuccessStatus;
 import com.draconist.goodluckynews.global.exception.GeneralException;
@@ -32,6 +34,7 @@ public class CommentService {
     private final CommentLikeRepository commentLikeRepository;
     private final PostLikeRepository postLikeRepository;
     private final PostRepository postRepository;
+    private final PlaceRepository placeRepository;
     private final MemberRepository memberRepository;
 
     public ResponseEntity<?> createComment(CommentDto commentDto, String email) {
@@ -73,19 +76,22 @@ public class CommentService {
         // 4. 해당 게시글 목록 조회
         List<Post> posts = postRepository.findByIdIn(postIds);
 
-        // 5. 게시글을 DTO로 변환하여 반환
+        // 5. 게시글과 플레이스를 DTO로 변환하여 반환
         List<PostDto> postDtoList = posts.stream()
-                .map(post -> PostDto.builder()
-                        .postId(post.getId())
-                        .placeId(post.getPlaceId())
-                        .userId(post.getUserId())
-                        .content(post.getContent())
-                        .image(post.getImage())
-                        .createdAt(post.getCreatedAt())
-                        .updatedAt(post.getUpdatedAt())
-                        .likeCount(postLikeRepository.countByPostId(post.getId())) // 좋아요 개수 추가
-                        .commentCount(commentRepository.countByPostId(post.getId())) // 댓글 개수 추가
-                        .build())
+                .map(post -> {
+                    Place place = placeRepository.findById(post.getPlaceId()).orElse(null);
+                    return PostDto.builder()
+                            .postId(post.getId())
+                            .placeId(post.getPlaceId())
+                            .placeName(place != null ? place.getPlaceName() : "알 수 없음") // 플레이스 이름 추가
+                            .content(post.getContent())
+                            .image(post.getImage())
+                            .createdAt(post.getCreatedAt())
+                            .updatedAt(post.getUpdatedAt())
+                            .likeCount(postLikeRepository.countByPostId(post.getId())) // 좋아요 개수 추가
+                            .commentCount(commentRepository.countByPostId(post.getId())) // 댓글 개수 추가
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.onSuccess(
@@ -93,6 +99,7 @@ public class CommentService {
                 postDtoList
         ));
     }
+
 
 
     public ResponseEntity<?> getAllComments() {
