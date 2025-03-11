@@ -34,7 +34,7 @@ public class PostService {
     private final MemberRepository memberRepository;
     private final AwsS3Service awsS3Service; // ✅ S3 파일 업로드 서비스 추가
 
-    public ResponseEntity<?> createPost(Long placeId, String content, MultipartFile image, String email) {
+    public ResponseEntity<?> createPost(PostDto postDto, MultipartFile image, String email) {
         try {
             Member user = memberRepository.findMemberByEmail(email)
                     .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
@@ -47,9 +47,9 @@ public class PostService {
 
             // ✅ 게시글 생성 후 저장 (이미지는 URL 형식으로 DB에 저장)
             Post post = Post.builder()
-                    .placeId(placeId)
+                    .placeId(postDto.getPlaceId())
                     .userId(user.getId())
-                    .content(content)
+                    .content(postDto.getContent())
                     .image(imageUrl) // ✅ URL 저장
                     .build();
 
