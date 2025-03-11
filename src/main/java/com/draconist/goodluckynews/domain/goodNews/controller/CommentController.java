@@ -39,4 +39,19 @@ public class CommentController {
         return commentService.toggleCommentLike(commentId, userDetails.getEmail());
     }//댓글 좋아요
 
+    @PostMapping("/reply/{commentId}")
+    public ResponseEntity<?> createReplyToComment(
+            @PathVariable Long commentId,
+            @RequestBody CommentDto commentDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return commentService.createReplyToComment(commentDto, userDetails.getEmail(),commentId);
+    } //특정 댓글에 reply달기
+
+
+    @GetMapping("/myalarm")
+    public ResponseEntity<?> commentAlarm(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return commentService.commentAlarm(userDetails.getEmail());
+    }//내 댓글에 달린 댓글
+
 }

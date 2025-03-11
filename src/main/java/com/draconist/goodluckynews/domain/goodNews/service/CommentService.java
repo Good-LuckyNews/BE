@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -98,20 +99,38 @@ public class CommentService {
         // 1. 모든 댓글 조회
         List<Comment> comments = commentRepository.findAll();
 
-        // 2. 조회된 댓글을 DTO로 변환하여 리스트로 반환
+        // 2. 각 댓글에 대한 답글 조회
         List<CommentDto> commentDtoList = comments.stream()
-                .map(comment -> CommentDto.builder()
-                        .commentId(comment.getId())
-                        .postId(comment.getPostId())
-                        .userId(comment.getUserId())
-                        .content(comment.getContent())
-                        .createdAt(comment.getCreatedAt())
-                        .likeCount(commentLikeRepository.countByCommentId(comment.getId())) // 좋아요 개수 추가
-                        .build())
+                .map(comment -> {
+                    // 댓글에 달린 답글 조회
+                    List<Comment> replies = commentRepository.findByParentCommentId(comment.getId());
+
+                    // 답글 리스트를 CommentDto로 변환
+                    List<CommentDto> replyDtoList = replies.stream()
+                            .map(reply -> CommentDto.builder()
+                                    .commentId(reply.getId())
+                                    .postId(reply.getPostId())
+                                    .content(reply.getContent())
+                                    .createdAt(reply.getCreatedAt())
+                                    .likeCount(commentLikeRepository.countByCommentId(reply.getId())) // 좋아요 개수
+                                    .build())
+                            .collect(Collectors.toList());
+
+                    // 댓글을 CommentDto로 변환 후, 답글 리스트 포함
+                    return CommentDto.builder()
+                            .commentId(comment.getId())
+                            .postId(comment.getPostId())
+                            .content(comment.getContent())
+                            .createdAt(comment.getCreatedAt())
+                            .likeCount(commentLikeRepository.countByCommentId(comment.getId())) // 좋아요 개수
+                            .replies(replyDtoList) // 답글 포함
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(commentDtoList);
     }
+
 
     public ResponseEntity<?> toggleCommentLike(Long commentId, String email) {
         // 1. 사용자 조회
@@ -167,5 +186,65 @@ public class CommentService {
                 "댓글이 성공적으로 삭제되었습니다."
         ));
     }//댓글 삭제
+
+    public ResponseEntity<?> createReplyToComment(CommentDto commentDto, String email, Long commentId) {
+        try {
+            // 1. 사용자 정보 조회
+            Member user = memberRepository.findMemberByEmail(email)
+                    .orElseThrow(() -> new RuntimeException(ErrorStatus.MEMBER_NOT_FOUND.getMessage()));
+
+            // 2. 댓글 조회 (답글을 달기 위한 부모 댓글)
+            Comment parentComment = commentRepository.findById(commentId)
+                    .orElseThrow(() -> new RuntimeException(ErrorStatus.COMMENT_NOT_FOUND.getMessage()));
+
+            // 3. 답글 생성
+            Comment replyComment = Comment.builder()
+                    .postId(parentComment.getPostId())  // 부모 댓글과 동일한 게시글에 답글 추가
+                    .userId(user.getId())
+                    .content(commentDto.getContent())
+                    .parentComment(parentComment)  // 부모 댓글 설정
+                    .build();
+
+            // 4. 댓글 저장
+            commentRepository.save(replyComment);
+
+            return ResponseEntity.status(SuccessStatus.COMMENT_CREATED.getHttpStatus()).body(SuccessStatus.COMMENT_CREATED);
+        } catch (Exception e) {
+            return ResponseEntity.status(ErrorStatus.COMMENT_CREATION_FAILED.getHttpStatus())
+                    .body(ErrorStatus.COMMENT_CREATION_FAILED);
+        }
+    }//댓글에 대한 답글 작성하기
+
+    public ResponseEntity<?> commentAlarm(String email) {
+        // 1. 사용자 정보 조회
+        Member user = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        // 2. 사용자가 작성한 댓글을 조회
+        List<Comment> userComments = commentRepository.findByUserId(user.getId());
+
+        // 3. 사용자가 작성한 댓글에 달린 대댓글들을 찾기 위한 리스트
+        List<Comment> repliesToUserComments = new ArrayList<>();
+
+        // 4. 사용자가 작성한 댓글에 대해 대댓글이 달린 것들만 찾기
+        for (Comment comment : userComments) {
+            List<Comment> replies = commentRepository.findByParentCommentUserId(comment.getUserId());
+            repliesToUserComments.addAll(replies);
+        }
+
+        // 5. 대댓글이 존재할 경우 처리
+        if (!repliesToUserComments.isEmpty()) {
+            return ResponseEntity.ok(ApiResponse.onSuccess(
+                    SuccessStatus.COMMENT_REPLIES_FOUND.getMessage(),
+                    repliesToUserComments
+            ));
+        }
+
+        // 6. 대댓글이 없으면 메시지 반환
+        return ResponseEntity.ok(ApiResponse.onSuccess(
+                SuccessStatus.NO_REPLIES_FOUND.getMessage(),
+                "사용자가 작성한 댓글에 달린 대댓글이 없습니다."
+        ));
+    } //내 댓글에 달린 대댓글 찾기
 
 }
