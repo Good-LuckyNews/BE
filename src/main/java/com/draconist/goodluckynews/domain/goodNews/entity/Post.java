@@ -1,5 +1,6 @@
 package com.draconist.goodluckynews.domain.goodNews.entity;
 
+import com.draconist.goodluckynews.domain.place.entity.Place;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -20,6 +21,10 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "postId")
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)  // 🔹 연관관계 매핑 (지연 로딩)
+    @JoinColumn(name = "placeId", insertable = false, updatable = false)  // 🔹 placeId를 외래키로 사용
+    private Place place;  // 🔹 플레이스 엔티티 참조
 
     @Column(name = "placeId", nullable = false)
     private Long placeId; // 게시글이 속한 장소 ID
@@ -47,5 +52,9 @@ public class Post {
                 .content(content)
                 .image(image)
                 .build();
+    }
+
+    public String getPlaceName() {  // 🔹 place의 이름을 가져오는 메서드 추가
+        return place != null ? place.getPlaceName() : null;
     }
 }
