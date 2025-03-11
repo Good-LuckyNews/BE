@@ -1,15 +1,17 @@
 package com.draconist.goodluckynews.domain.goodNews.controller;
 
 
-import com.draconist.goodluckynews.domain.goodNews.dto.PostDto;
+import com.draconist.goodluckynews.domain.goodNews.dto.GoodnewsDto;
 import com.draconist.goodluckynews.domain.goodNews.service.PostService;
 import com.draconist.goodluckynews.global.jwt.dto.CustomUserDetails;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -17,14 +19,13 @@ import org.springframework.web.multipart.MultipartFile;
 public class PostController {
     private final PostService postService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE) // ✅ Multipart 요청 허용
+    @PostMapping()
     public ResponseEntity<?> createPost(
-            @RequestParam("placeId") Long placeId,
-            @RequestParam("content") String content,
-            @RequestPart(value = "image", required = false) MultipartFile image,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        return postService.createPost(placeId, content, image, userDetails.getEmail());
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            @Valid @ModelAttribute GoodnewsDto goodnewsDto
+    ) throws IOException {
+        return postService.createPost(goodnewsDto, image, userDetails.getEmail());
     }//희소식 생성
 
     @GetMapping("/{postId}")
