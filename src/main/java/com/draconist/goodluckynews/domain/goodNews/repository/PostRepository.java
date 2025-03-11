@@ -15,6 +15,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // 🔹 여러 개의 게시글 ID를 한 번에 조회하는 기능 추가
     @Query("SELECT p FROM Post p JOIN FETCH Place pl ON p.placeId = pl.id WHERE p.userId = :userId")
     List<Post> findByUserIdWithPlace(@Param("userId") Long userId);
+    List<Post> findByPlaceIdOrderByCreatedAtDesc(Long placeId);
     List<Post> findByIdIn(Set<Long> postIds);
     void deleteById(Long postId);//삭제 기능 추가
 }

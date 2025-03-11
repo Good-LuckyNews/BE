@@ -65,6 +65,8 @@ public class PostController {
         return postService.deletePost(postId, userDetails.getEmail());
     }//희소식 삭제
 
-
-
+    @GetMapping("/place/{placeId}")
+    public ResponseEntity<?> getPostsByPlace(@PathVariable Long placeId) {
+        return ResponseEntity.ok(postService.getPostsByPlace(placeId));
+    }
 }
