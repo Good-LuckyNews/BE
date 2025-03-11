@@ -11,18 +11,20 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/api/posts")
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
 
-    @PostMapping() // ✅ Multipart 요청 허용
+    @PostMapping()
     public ResponseEntity<?> createPost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(value = "image", required = false) MultipartFile image,
             @Valid @ModelAttribute GoodnewsDto goodnewsDto
-    ) {
+    ) throws IOException {
         return postService.createPost(goodnewsDto, image, userDetails.getEmail());
     }//희소식 생성
 
