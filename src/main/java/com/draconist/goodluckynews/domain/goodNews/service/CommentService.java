@@ -110,7 +110,6 @@ public class CommentService {
                             .map(reply -> CommentDto.builder()
                                     .commentId(reply.getId())
                                     .postId(reply.getPostId())
-                                    .userId(reply.getUserId())
                                     .content(reply.getContent())
                                     .createdAt(reply.getCreatedAt())
                                     .likeCount(commentLikeRepository.countByCommentId(reply.getId())) // 좋아요 개수
@@ -121,7 +120,6 @@ public class CommentService {
                     return CommentDto.builder()
                             .commentId(comment.getId())
                             .postId(comment.getPostId())
-                            .userId(comment.getUserId())
                             .content(comment.getContent())
                             .createdAt(comment.getCreatedAt())
                             .likeCount(commentLikeRepository.countByCommentId(comment.getId())) // 좋아요 개수

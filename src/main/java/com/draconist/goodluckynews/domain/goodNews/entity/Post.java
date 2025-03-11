@@ -21,9 +21,6 @@ public class Post {
     @Column(name = "postId")
     private Long id;
 
-    @Column(name = "title", nullable = false, length = 255)
-    private String title; // 게시글 제목
-
     @Column(name = "placeId", nullable = false)
     private Long placeId; // 게시글이 속한 장소 ID
 
