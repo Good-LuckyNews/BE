@@ -228,7 +228,7 @@ public class CommentService {
 
         // 4. 사용자가 작성한 댓글에 대해 대댓글이 달린 것들만 찾기
         for (Comment comment : userComments) {
-            List<Comment> replies = commentRepository.findByParentCommentUserId(comment.getUserId());
+            List<Comment> replies = commentRepository.findByParentComment(comment);
             repliesToUserComments.addAll(replies);
         }
 
