@@ -63,7 +63,7 @@ public class PostService {
             return ResponseEntity.status(ErrorStatus.POST_CREATION_FAILED.getHttpStatus())
                     .body(ErrorStatus.POST_CREATION_FAILED);
         }
-    }
+    }//게시글 생성
 
     public ResponseEntity<?> getPostById(Long postId) {
         // 1. 게시글 조회 (없으면 예외 발생)
