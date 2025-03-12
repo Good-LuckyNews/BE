@@ -33,10 +33,12 @@ public class PlaceController {
     @GetMapping
     public ResponseEntity<?> getAllPlaces(
             @RequestParam(defaultValue = "0") int page,  // 기본값 0
-            @RequestParam(defaultValue = "10") int size // 기본값 10
+            @RequestParam(defaultValue = "10") int size, // 기본값 10
+            @AuthenticationPrincipal CustomUserDetails userDetails // 🔹 로그인 사용자 정보 가져오기
     ) {
-        return placeService.findAllWithPagination(page, size);
-    }//플레이스 전체 조회
+        return placeService.findAllWithPagination(page, size, userDetails.getEmail());
+    }
+//플레이스 전체 조회
 
 
     @GetMapping("/{placeId}")
