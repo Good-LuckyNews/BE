@@ -94,37 +94,40 @@ public class PlaceService {
                 ));
     }//플레이스 삭제
 
-    public ResponseEntity<?> findAllWithPagination(int page, int size) {
+    public ResponseEntity<?> findAllWithPagination(int page, int size, String email) {
         // 1. 페이지 번호가 음수 또는 0 이하인 경우 예외 발생
         if (page < 0 || size <= 0) {
             throw new GeneralException(ErrorStatus._PAGE_INVALID_REQUEST);
         }
 
-        // 2. 페이지네이션 적용하여 데이터 조회
+        // 2. 사용자 정보 조회 (북마크 여부 확인을 위해)
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        // 3. 페이지네이션 적용하여 데이터 조회
         Pageable pageable = PageRequest.of(page, size);
         Page<Place> placePage = placeRepository.findAll(pageable);
 
-        // 3. 조회된 데이터가 없는 경우 예외 처리
-        if (placePage.isEmpty()) {
-            throw new GeneralException(ErrorStatus._PAGE_EMPTY_RESULT);
-        }
-
         // 4. 조회된 데이터를 DTO로 변환
-        Page<PlaceDTO> placeDTOPage = placePage.map(place ->
-                PlaceDTO.builder()
-                        .placeId(place.getId())  // 🔹 placeId 추가
-                        .placeName(place.getPlaceName())
-                        .placeDetails(place.getPlaceDetails())
-                        .placeImg(place.getPlaceImg())
-                        .build()
-        );
+        Page<PlaceDTO> placeDTOPage = placePage.map(place -> {
+            boolean isBookmarked = placeLikeRepository.existsByPlaceIdAndUserId(place.getId(), member.getId());
+            return PlaceDTO.builder()
+                    .placeId(place.getId())
+                    .placeName(place.getPlaceName())
+                    .placeDetails(place.getPlaceDetails())
+                    .placeImg(place.getPlaceImg())
+                    .likeCount(placeLikeRepository.countByPlaceId(place.getId())) // 좋아요 개수 추가
+                    .isBookmark(isBookmarked) // 북마크 여부 추가
+                    .build();
+        });
 
         // 5. 성공 응답 반환
         return ResponseEntity.ok(ApiResponse.onSuccess(
                 SuccessStatus._PLACE_PAGINATION_SUCCESS.getMessage(),
                 placeDTOPage
         ));
-    }//플레이스 전체 조회 ( 페이지네이션 )
+    }
+//플레이스 전체 조회 ( 페이지네이션 )
 
     public ResponseEntity<?> getPlaceById(Long placeId) {
         // 1. placeId로 Place 조회 (없으면 예외 발생)
@@ -216,11 +219,11 @@ public class PlaceService {
         // 2. 사용자가 생성한 플레이스 조회
         List<Place> places = placeRepository.findByUserId(member.getId());
 
-        // 3. DTO 변환 및 좋아요 정보 추가
+        // 3. DTO 변환 및 북마크 정보 추가
         List<PlaceDTO> placeDTOList = places.stream()
                 .map(place -> {
                     int likeCount = placeLikeRepository.countByPlaceId(place.getId()); // 좋아요 개수 조회
-                    boolean isLiked = placeLikeRepository.existsByPlaceIdAndUserId(place.getId(), member.getId()); // 내가 좋아요 눌렀는지 확인
+                    boolean isBookmarked = placeLikeRepository.existsByPlaceIdAndUserId(place.getId(), member.getId()); // 북마크 여부 확인
 
                     return PlaceDTO.builder()
                             .placeId(place.getId())
@@ -228,7 +231,7 @@ public class PlaceService {
                             .placeDetails(place.getPlaceDetails())
                             .placeImg(place.getPlaceImg())
                             .likeCount(likeCount) // 좋아요 개수 추가
-                            .isLiked(isLiked) // 내가 좋아요 눌렀는지 추가
+                            .isBookmark(isBookmarked) // 북마크 여부 추가
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -237,7 +240,8 @@ public class PlaceService {
                 SuccessStatus._PLACE_MYLIST_SUCCESS.getMessage(),
                 placeDTOList
         ));
-    }//내가 만든 플레이스 조회
+    }
+//내가 만든 플레이스 조회
 
 
 
