@@ -76,7 +76,7 @@ public class ArticleService {
         return ResponseEntity.status(201).body(ApiResponse.onSuccess("기사들이 생성되었습니다."));
     }
 
-    //사용자가 만든 기사 확인, 랜덤으로 하나 가져오기
+    //사용자 키워드에 맞는 랜덤으로 하나 가져오기
     @Transactional
     public ResponseEntity<?> getUserArticles(Long userId) {
         // 404 : 토큰에 해당하는 회원이 실제로 존재하는지 확인
