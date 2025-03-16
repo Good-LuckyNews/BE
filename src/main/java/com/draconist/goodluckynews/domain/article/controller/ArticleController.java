@@ -49,6 +49,7 @@ public class ArticleController {
     private final HeartService heartService;
     private final CompletedTimeService completedTimeService;
 
+    //수동으로 뉴스기사 크롤링
     @GetMapping("/fetch-news")
     public ResponseEntity<ApiResponse<String>> fetchAndSaveNews(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         // 1. 이메일로 회원 id 찾기
@@ -185,9 +186,11 @@ public class ArticleController {
             log.error("응답 읽기 실패: {}", e.getMessage());
             throw new RuntimeException("API 응답을 읽는 데 실패했습니다.", e);
         }
-    }
+    }//수동으로 뉴스기사 크롤링
 
-    // 유저에 등록된 기사 조회
+
+
+    // 유저에 등록된 기사 랜덤조회
     @GetMapping("/article/user")
     public ResponseEntity<?> getAllArticles(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         // 1. 이메일로 회원 id 찾기

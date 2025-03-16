@@ -18,6 +18,6 @@ public interface ArticleRepository extends JpaRepository<ArticleEntity,Long> {
     Page<ArticleEntity> searchArticles(@Param("searchQuery") String searchQuery, Pageable pageable);
 
     // 회원 ID로 랜덤으로 하나의 게시글
-    @Query(value = "SELECT * FROM article WHERE keywords LIKE %:keyword% ORDER BY RAND() LIMIT 1", nativeQuery = true)
+    @Query(value = "SELECT * FROM article WHERE keywords LIKE %:keyword% AND DATE(original_date) = CURDATE() ORDER BY RAND() LIMIT 1", nativeQuery = true)
     ArticleEntity findRandomArticleByKeyword(@Param("keyword") String keyword);
 }
