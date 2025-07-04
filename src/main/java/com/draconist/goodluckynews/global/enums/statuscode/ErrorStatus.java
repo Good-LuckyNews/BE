@@ -11,6 +11,7 @@ public enum ErrorStatus implements BaseCode {
 	_BAD_REQUEST(HttpStatus.BAD_REQUEST, "COMMON400", "잘못된 요청입니다."),
 	_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "COMMON401", "인증이 필요합니다."),
 	_FORBIDDEN(HttpStatus.FORBIDDEN, "COMMON403", "금지된 요청입니다."),
+	_INVALID_PLACE_ID(HttpStatus.BAD_REQUEST, "COMMON4001", "잘못된 타입의 파라미터입니다."),
 
 	// Member Error
 	MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "MEMBER4001", "해당하는 사용자를 찾을 수 없습니다."),
@@ -66,7 +67,6 @@ public enum ErrorStatus implements BaseCode {
 	_PLACE_UPDATE_FAILED(HttpStatus.BAD_REQUEST, "PLACE4003", "플레이스 정보를 수정하는 중 오류가 발생하였습니다."),
 	_PLACE_DELETE_FAILED(HttpStatus.BAD_REQUEST, "PLACE4004", "플레이스 삭제 중 오류가 발생하였습니다."),
 	UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "PLACE4005", "해당 플레이스를 수정 또는 삭제할 권한이 없습니다.");
-
 	private final HttpStatus httpStatus;
 	private final String code;
 	private final String message;
