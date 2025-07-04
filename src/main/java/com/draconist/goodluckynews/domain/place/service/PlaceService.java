@@ -2,7 +2,9 @@ package com.draconist.goodluckynews.domain.place.service;
 
 import com.draconist.goodluckynews.domain.member.entity.Member;
 import com.draconist.goodluckynews.domain.member.repository.MemberRepository;
+import com.draconist.goodluckynews.domain.place.dto.PlaceCreateDTO;
 import com.draconist.goodluckynews.domain.place.dto.PlaceDTO;
+import com.draconist.goodluckynews.domain.place.dto.PlacePageResponse;
 import com.draconist.goodluckynews.domain.place.entity.Place;
 import com.draconist.goodluckynews.domain.place.repository.PlaceLikeRepository;
 import com.draconist.goodluckynews.domain.place.repository.PlaceRepository;
@@ -33,7 +35,7 @@ public class PlaceService {
     private final AwsS3Service awsS3Service;
     private final PlaceLikeRepository placeLikeRepository;
 
-    public ResponseEntity<?> createPlace(MultipartFile image, PlaceDTO placeDTO, String email)throws IOException {
+    public ResponseEntity<?> createPlace(MultipartFile image, PlaceCreateDTO placeDTO, String email)throws IOException {
         //1. 이메일로 회원 정보 찾기
         Member member = memberRepository.findMemberByEmail(email)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
@@ -95,38 +97,52 @@ public class PlaceService {
     }//플레이스 삭제
 
     public ResponseEntity<?> findAllWithPagination(int page, int size, String email) {
-        // 1. 페이지 번호가 음수 또는 0 이하인 경우 예외 발생
+        // 1. 페이지, 사이즈 유효성 검사
         if (page < 0 || size <= 0) {
             throw new GeneralException(ErrorStatus._PAGE_INVALID_REQUEST);
         }
-
-        // 2. 사용자 정보 조회 (북마크 여부 확인을 위해)
+        // 2. 사용자 조회
         Member member = memberRepository.findMemberByEmail(email)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-
-        // 3. 페이지네이션 적용하여 데이터 조회
+        // 3. 페이징 데이터 조회
         Pageable pageable = PageRequest.of(page, size);
         Page<Place> placePage = placeRepository.findAll(pageable);
 
-        // 4. 조회된 데이터를 DTO로 변환
-        Page<PlaceDTO> placeDTOPage = placePage.map(place -> {
-            boolean isBookmarked = placeLikeRepository.existsByPlaceIdAndUserId(place.getId(), member.getId());
-            return PlaceDTO.builder()
-                    .placeId(place.getId())
-                    .placeName(place.getPlaceName())
-                    .placeDetails(place.getPlaceDetails())
-                    .placeImg(place.getPlaceImg())
-                    .likeCount(placeLikeRepository.countByPlaceId(place.getId())) // 좋아요 개수 추가
-                    .isBookmark(isBookmarked) // 북마크 여부 추가
-                    .build();
-        });
+        // 4. 조회 결과 없을 때
+        if (placePage.isEmpty()) {
+            throw new GeneralException(ErrorStatus._PAGE_EMPTY_RESULT);
+        }
 
-        // 5. 성공 응답 반환
+        List<PlaceDTO> placeDTOList = placePage.getContent().stream()
+                .map(place -> {
+                    boolean isBookmarked = placeLikeRepository.existsByPlaceIdAndUserId(place.getId(), member.getId());
+                    return PlaceDTO.builder()
+                            .placeId(place.getId())
+                            .placeName(place.getPlaceName())
+                            .placeDetails(place.getPlaceDetails())
+                            .placeImg(place.getPlaceImg())
+                            .likeCount(placeLikeRepository.countByPlaceId(place.getId()))
+                            .isBookmark(isBookmarked)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        PlacePageResponse response = PlacePageResponse.builder()
+                .content(placeDTOList)
+                .totalPages(placePage.getTotalPages())
+                .totalElements(placePage.getTotalElements())
+                .pageNumber(placePage.getNumber())
+                .pageSize(placePage.getSize())
+                .isFirst(placePage.isFirst())
+                .isLast(placePage.isLast())
+                .build();
+
         return ResponseEntity.ok(ApiResponse.onSuccess(
                 SuccessStatus._PLACE_PAGINATION_SUCCESS.getMessage(),
-                placeDTOPage
+                response
         ));
     }
+
 //플레이스 전체 조회 ( 페이지네이션 )
 
     public ResponseEntity<?> getPlaceById(Long placeId) {
