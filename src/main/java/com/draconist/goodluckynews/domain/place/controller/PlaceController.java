@@ -1,5 +1,6 @@
 package com.draconist.goodluckynews.domain.place.controller;
 
+import com.draconist.goodluckynews.domain.place.dto.PlaceCreateDTO;
 import com.draconist.goodluckynews.domain.place.dto.PlaceDTO;
 import com.draconist.goodluckynews.domain.place.service.PlaceService;
 import com.draconist.goodluckynews.global.jwt.dto.CustomUserDetails;
@@ -18,7 +19,7 @@ public class PlaceController {
     private final PlaceService placeService;
     @PostMapping()
     public ResponseEntity<?> createPlace(@RequestParam(value = "image",required = false) MultipartFile image,
-                @ModelAttribute PlaceDTO communityDTO,
+                @ModelAttribute PlaceCreateDTO communityDTO,
                 @AuthenticationPrincipal CustomUserDetails customUserDetails)throws IOException {
         return  placeService.createPlace(image, communityDTO, customUserDetails.getEmail());
     } //플레이스 생성
