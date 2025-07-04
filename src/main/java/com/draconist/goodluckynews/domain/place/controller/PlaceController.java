@@ -47,12 +47,12 @@ public class PlaceController {
         return placeService.getPlaceById(placeId);
     }//특정 플레이스 상세 조회
 
-    @PostMapping("/{placeId}")
+    @PatchMapping("/{placeId}")
     public ResponseEntity<?> updatePlace(
             @PathVariable Long placeId,
             @RequestParam(value = "image", required = false) MultipartFile image,
-            @RequestParam(value = "placeName") String placeName,
-            @RequestParam(value = "placeDetails") String placeDetails,
+            @RequestParam(value = "placeName", required = false)  String placeName,
+            @RequestParam(value = "placeDetails", required = false) String placeDetails,
             @AuthenticationPrincipal CustomUserDetails customUserDetails) throws IOException {
 
         PlaceDTO placeDTO = PlaceDTO.builder()
