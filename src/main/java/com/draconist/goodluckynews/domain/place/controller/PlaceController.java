@@ -72,8 +72,13 @@ public class PlaceController {
     }//플레이스 북마크
 
     @GetMapping("/mypage")
-    public ResponseEntity<?> getMyPlaces(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return placeService.getMyPlaces(customUserDetails.getEmail());
-    }// 내가 만든 플레이스 조회
+    public ResponseEntity<?> getMyPlaces(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return placeService.getMyPlaces(customUserDetails.getEmail(), page, size);
+    }
+// 내가 만든 플레이스 조회
 
 }
