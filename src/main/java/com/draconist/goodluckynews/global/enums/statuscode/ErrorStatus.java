@@ -12,7 +12,7 @@ public enum ErrorStatus implements BaseCode {
 	_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "COMMON401", "인증이 필요합니다."),
 	_FORBIDDEN(HttpStatus.FORBIDDEN, "COMMON403", "금지된 요청입니다."),
 	_INVALID_PLACE_ID(HttpStatus.BAD_REQUEST, "COMMON4001", "잘못된 타입의 파라미터입니다."),
-
+	_NO_UPDATE_VALUE(HttpStatus.BAD_REQUEST, "COMMON4002", "수정요청이 들어왔지만 담고 있는 값이 없습니다."),
 	// Member Error
 	MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "MEMBER4001", "해당하는 사용자를 찾을 수 없습니다."),
 	PASSWORD_NOT_CORRECT(HttpStatus.FORBIDDEN, "MEMBER4002", "비밀번호가 일치하지 않습니다."),

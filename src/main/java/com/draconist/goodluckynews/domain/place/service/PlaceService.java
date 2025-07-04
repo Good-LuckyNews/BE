@@ -6,6 +6,7 @@ import com.draconist.goodluckynews.domain.place.dto.PlaceCreateDTO;
 import com.draconist.goodluckynews.domain.place.dto.PlaceDTO;
 import com.draconist.goodluckynews.domain.place.dto.PlacePageResponse;
 import com.draconist.goodluckynews.domain.place.entity.Place;
+import com.draconist.goodluckynews.domain.place.entity.PlaceLike;
 import com.draconist.goodluckynews.domain.place.repository.PlaceLikeRepository;
 import com.draconist.goodluckynews.domain.place.repository.PlaceRepository;
 import com.draconist.goodluckynews.global.awss3.service.AwsS3Service;
@@ -183,7 +184,15 @@ public class PlaceService {
         if (!place.getUserId().equals(member.getId())) {
             throw new GeneralException(ErrorStatus.UNAUTHORIZED_ACCESS);
         }
+        //  수정할 값이 하나도 없는 경우 예외 처리
+        boolean noUpdateValue =
+                (image == null || image.isEmpty()) &&
+                        (placeDTO.getPlaceName() == null || placeDTO.getPlaceName().isBlank()) &&
+                        (placeDTO.getPlaceDetails() == null || placeDTO.getPlaceDetails().isBlank());
 
+        if (noUpdateValue) {
+            throw new GeneralException(ErrorStatus._NO_UPDATE_VALUE);
+        }
         // 4. 새 이미지 업로드 (기존 이미지 삭제)
         String imageURL = place.getPlaceImg(); // 기존 이미지 유지
         if (image != null && !image.isEmpty()) {
@@ -219,15 +228,30 @@ public class PlaceService {
         Place place = placeRepository.findById(placeId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.PLACE_NOT_FOUND));
 
-        // 3. 북마크 상태 변경 (토글)
-        place.toggleBookmark();
-        placeRepository.save(place);
+        // 3. 현재 북마크 상태 확인
+        boolean isBookmarked = placeLikeRepository.existsByPlaceIdAndUserId(placeId, member.getId());
 
-        // 4. 응답 반환
-        String message = place.isBookmarked() ? "북마크 추가 완료" : "북마크 삭제 완료";
+        String message;
+        if (isBookmarked) {
+            // 이미 북마크 되어 있으면 삭제
+            PlaceLike placeLike = placeLikeRepository.findByPlaceIdAndUserId(placeId, member.getId())
+                    .orElseThrow(() -> new GeneralException(ErrorStatus._HEART_NOT_FOUND)); // 적절한 에러 코드 사용
+            placeLikeRepository.delete(placeLike);
+            message = "북마크 삭제 완료";
+        } else {
+            // 북마크 안되어 있으면 추가
+            PlaceLike newLike = PlaceLike.builder()
+                    .place(place)
+                    .user(member)
+                    .build();
+            placeLikeRepository.save(newLike);
+            message = "북마크 추가 완료";
+        }
+
         return ResponseEntity.status(SuccessStatus._BOOKMARK_UPDATED.getHttpStatus())
                 .body(ApiResponse.onSuccess(SuccessStatus._BOOKMARK_UPDATED.getMessage(), message));
-    }//플레이스 북마크
+    }
+//플레이스 북마크
 
     public ResponseEntity<?> getMyPlaces(String email, int page, int size) {
         // 1. 사용자 정보 조회
