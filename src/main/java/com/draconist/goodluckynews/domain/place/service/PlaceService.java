@@ -82,7 +82,7 @@ public class PlaceService {
 
         // 4. S3에 저장된 이미지 삭제 (있을 경우)
         if (place.getPlaceImg() != null) {
-            awsS3Service.deleteFile(place.getPlaceImg());
+            awsS3Service.deleteFileByUrl(place.getPlaceImg());
         }
 
         // 5. Place 삭제
@@ -186,7 +186,7 @@ public class PlaceService {
         String imageURL = place.getPlaceImg(); // 기존 이미지 유지
         if (image != null && !image.isEmpty()) {
             if (imageURL != null) { // 기존 이미지 삭제
-                awsS3Service.deleteFile(imageURL);
+                awsS3Service.deleteFileByUrl(imageURL);
             }
             imageURL = awsS3Service.uploadFile(image); // 새 이미지 업로드
         }
