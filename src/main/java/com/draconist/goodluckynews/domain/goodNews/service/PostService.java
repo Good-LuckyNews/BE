@@ -78,8 +78,7 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException(ErrorStatus.POST_NOT_FOUND.getMessage()));
 
-
-        // 2. 조회된 게시글을 DTO로 변환하여 반환
+        // 2. 조회된 게시글을 DTO로 변환
         GoodnewsDto.PostDto postDto = GoodnewsDto.PostDto.builder()
                 .postId(post.getId())
                 .placeId(post.getPlaceId())
@@ -93,8 +92,14 @@ public class PostService {
                 .commentCount(commentRepository.countByPostId(post.getId()))
                 .build();
 
-        return ResponseEntity.ok(postDto);
+        // 3. ApiResponse로 감싸서 반환 (POST_DETAIL_SUCCESS 사용)
+        return ResponseEntity.status(SuccessStatus.POST_DETAIL_SUCCESS.getHttpStatus())
+                .body(ApiResponse.onSuccess(
+                        SuccessStatus.POST_DETAIL_SUCCESS.getMessage(),
+                        postDto
+                ));
     }
+
 
     public ResponseEntity<?> getAllPosts(int page, int size) {
         // 1. 페이지네이션 객체 생성
@@ -255,19 +260,20 @@ public class PostService {
         ));
     }//희소식 삭제
 
-    public List<GoodnewsDto.PostDto> getPostsByPlace(Long placeId) {
+    public ResponseEntity<?> getPostsByPlace(Long placeId) {
         // 1. 플레이스 존재 여부 확인
         Place place = placeRepository.findById(placeId)
                 .orElseThrow(() -> new RuntimeException("해당 플레이스를 찾을 수 없습니다."));
 
-        // 2. 플레이스에 속한 게시글 조회
-        return postRepository.findByPlaceIdOrderByCreatedAtDesc(placeId)
+        // 2. 플레이스에 속한 게시글 조회 및 DTO 변환
+        List<GoodnewsDto.PostDto> postDtoList = postRepository.findByPlaceIdOrderByCreatedAtDesc(placeId)
                 .stream()
                 .map(post -> GoodnewsDto.PostDto.builder()
                         .postId(post.getId())
                         .placeId(post.getPlaceId())
-                        .placeName(place.getPlaceName())  // 🔹 플레이스명 추가
+                        .userId(post.getUserId())
                         .content(post.getContent())
+                        .placeName(post.getPlace() != null ? post.getPlace().getPlaceName() : null)
                         .image(post.getImage())
                         .createdAt(post.getCreatedAt())
                         .updatedAt(post.getUpdatedAt())
@@ -275,6 +281,14 @@ public class PostService {
                         .commentCount(commentRepository.countByPostId(post.getId()))
                         .build())
                 .collect(Collectors.toList());
-    }//플레이스별 희소식 조회
+
+        // 3. ApiResponse로 감싸서 반환
+        return ResponseEntity.status(SuccessStatus.POST_LIST_SUCCESS.getHttpStatus())
+                .body(ApiResponse.onSuccess(
+                        SuccessStatus.POST_LIST_SUCCESS.getMessage(),
+                        postDtoList
+                ));
+    }
+//플레이스별 희소식 조회
 
 }
