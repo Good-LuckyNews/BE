@@ -47,8 +47,8 @@ dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
 	//mariadb설정
-	implementation 'org.mariadb.jdbc:mariadb-java-client:3.3.3'
-
+	//implementation 'org.mariadb.jdbc:mariadb-java-client:3.3.3'
+	implementation 'mysql:mysql-connector-java:8.0.33'
 	//jsoup 설정
 	implementation 'org.jsoup:jsoup:1.16.2'
 
