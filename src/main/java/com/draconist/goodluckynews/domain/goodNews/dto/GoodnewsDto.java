@@ -65,4 +65,13 @@ public class GoodnewsDto {
         private int likeCount;     // 좋아요 개수 추가
         private int commentCount;  // 댓글 개수 추가
     }//값 반환 dto
+
+    @Builder
+    @Getter
+    public static class PostLikeResponseDto {
+        private Long postId;
+        private Long placeId;
+        private Long userId;
+        private int likeCount;
+    }
 }
