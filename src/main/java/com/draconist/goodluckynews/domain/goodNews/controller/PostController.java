@@ -1,6 +1,5 @@
 package com.draconist.goodluckynews.domain.goodNews.controller;
 
-
 import com.draconist.goodluckynews.domain.goodNews.dto.GoodnewsDto;
 import com.draconist.goodluckynews.domain.goodNews.service.PostService;
 import com.draconist.goodluckynews.global.jwt.dto.CustomUserDetails;
@@ -23,9 +22,9 @@ public class PostController {
     public ResponseEntity<?> createPost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(value = "image", required = false) MultipartFile image,
-            @Valid @ModelAttribute GoodnewsDto goodnewsDto
+            @Valid @ModelAttribute GoodnewsDto.GoodnewsCreateDto goodnewsCreateDTO
     ) throws IOException {
-        return postService.createPost(goodnewsDto, image, userDetails.getEmail());
+        return postService.createPost(goodnewsCreateDTO, image, userDetails.getEmail());
     }//희소식 생성
 
     @GetMapping("/{postId}")

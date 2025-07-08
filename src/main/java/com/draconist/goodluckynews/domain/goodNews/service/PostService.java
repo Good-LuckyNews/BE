@@ -1,7 +1,6 @@
 package com.draconist.goodluckynews.domain.goodNews.service;
 
 import com.draconist.goodluckynews.domain.goodNews.dto.GoodnewsDto;
-import com.draconist.goodluckynews.domain.goodNews.dto.PostDto;
 import com.draconist.goodluckynews.domain.goodNews.entity.Post;
 import com.draconist.goodluckynews.domain.goodNews.entity.PostLike;
 import com.draconist.goodluckynews.domain.goodNews.repository.CommentRepository;
@@ -38,10 +37,13 @@ public class PostService {
     private final AwsS3Service awsS3Service;
     private final PlaceRepository placeRepository;
 
-    public ResponseEntity<?> createPost(GoodnewsDto goodnewsDto, MultipartFile image, String email) {
+    public ResponseEntity<?> createPost(GoodnewsDto.GoodnewsCreateDto goodnewsCreateDTO, MultipartFile image, String email) {
         try {
             Member user = memberRepository.findMemberByEmail(email)
                     .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+            Place place = placeRepository.findById(goodnewsCreateDTO.getPlaceId())
+                    .orElseThrow(() -> new GeneralException(ErrorStatus.PLACE_NOT_FOUND));
 
             String imageUrl = Optional.ofNullable(image)
                     .filter(f -> !f.isEmpty())
@@ -49,16 +51,21 @@ public class PostService {
                     .orElse(null);
 
             Post post = Post.builder()
-                    .placeId(goodnewsDto.getPlaceId())
+                    .placeId(place.getId())
                     .userId(user.getId())
-                    .content(goodnewsDto.getContent())
+                    .content(goodnewsCreateDTO.getContent())
                     .image(imageUrl)
                     .build();
 
+            post.setPlace(place);
+
             postRepository.save(post);
 
+            // DTO 변환 및 반환
+            GoodnewsDto.GoodnewsResponseDto response = GoodnewsDto.GoodnewsResponseDto.from(post);
+
             return ResponseEntity.status(SuccessStatus.POST_CREATED.getHttpStatus())
-                    .body(ApiResponse.onSuccess(SuccessStatus.POST_CREATED.getMessage(), post));
+                    .body(ApiResponse.onSuccess(SuccessStatus.POST_CREATED.getMessage(), response));
         } catch (Exception e) {
             return ResponseEntity.status(ErrorStatus.POST_CREATION_FAILED.getHttpStatus())
                     .body(ErrorStatus.POST_CREATION_FAILED);
@@ -72,7 +79,7 @@ public class PostService {
 
 
         // 2. 조회된 게시글을 DTO로 변환하여 반환
-        PostDto postDto = PostDto.builder()
+        GoodnewsDto.PostDto postDto = GoodnewsDto.PostDto.builder()
                 .postId(post.getId())
                 .placeId(post.getPlaceId())
                 .userId(post.getUserId())
@@ -93,15 +100,18 @@ public class PostService {
         Page<Post> postPage = postRepository.findAll(pageable);
 
         // 3. 조회된 게시글을 DTO로 변환하여 리스트로 반환
-        List<PostDto> postDtoList = postPage.getContent().stream()
-                .map(post -> PostDto.builder()
-                        .postId(post.getId())  // 전체 조회에서 받은 ID를 상세 조회에 사용 가능
+        List<GoodnewsDto.PostDto> postDtoList = postPage.getContent().stream()
+                .map(post -> GoodnewsDto.PostDto.builder()
+                        .postId(post.getId())
                         .placeId(post.getPlaceId())
                         .userId(post.getUserId())
                         .content(post.getContent())
+                        .placeName(post.getPlace() != null ? post.getPlace().getPlaceName() : null)
                         .image(post.getImage())
                         .createdAt(post.getCreatedAt())
                         .updatedAt(post.getUpdatedAt())
+                        .likeCount(0)
+                        .commentCount(0)
                         .build())
                 .collect(Collectors.toList());
 
@@ -141,8 +151,8 @@ public class PostService {
         List<Post> searchResults = postRepository.searchByContent(query);
 
         // 2. 조회된 게시글을 DTO로 변환하여 리스트로 반환
-        List<PostDto> postDtoList = searchResults.stream()
-                .map(post -> PostDto.builder()
+        List<GoodnewsDto.PostDto> postDtoList = searchResults.stream()
+                .map(post -> GoodnewsDto.PostDto.builder()
                         .postId(post.getId())
                         .placeId(post.getPlaceId())
                         .userId(post.getUserId())
@@ -162,8 +172,8 @@ public class PostService {
 
         List<Post> posts = postRepository.findByUserIdWithPlace(user.getId());
 
-        List<PostDto> postDtoList = posts.stream()
-                .map(post -> PostDto.builder()
+        List<GoodnewsDto.PostDto> postDtoList = posts.stream()
+                .map(post -> GoodnewsDto.PostDto.builder()
                         .postId(post.getId())
                         .placeId(post.getPlaceId())
                         .placeName(post.getPlace().getPlaceName())  // 🔹 플레이스 제목 추가
@@ -209,7 +219,7 @@ public class PostService {
         ));
     }//희소식 삭제
 
-    public List<PostDto> getPostsByPlace(Long placeId) {
+    public List<GoodnewsDto.PostDto> getPostsByPlace(Long placeId) {
         // 1. 플레이스 존재 여부 확인
         Place place = placeRepository.findById(placeId)
                 .orElseThrow(() -> new RuntimeException("해당 플레이스를 찾을 수 없습니다."));
@@ -217,7 +227,7 @@ public class PostService {
         // 2. 플레이스에 속한 게시글 조회
         return postRepository.findByPlaceIdOrderByCreatedAtDesc(placeId)
                 .stream()
-                .map(post -> PostDto.builder()
+                .map(post -> GoodnewsDto.PostDto.builder()
                         .postId(post.getId())
                         .placeId(post.getPlaceId())
                         .placeName(place.getPlaceName())  // 🔹 플레이스명 추가
