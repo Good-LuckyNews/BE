@@ -44,17 +44,4 @@ public class Post {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt; // 수정 날짜
-
-    public static Post createPost(Long placeId, Long userId, String content, String image) {
-        return Post.builder()
-                .placeId(placeId)
-                .userId(userId)
-                .content(content)
-                .image(image)
-                .build();
-    }
-
-    public String getPlaceName() {  // 🔹 place의 이름을 가져오는 메서드 추가
-        return place != null ? place.getPlaceName() : null;
-    }
 }
