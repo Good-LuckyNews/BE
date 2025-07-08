@@ -21,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -84,9 +85,12 @@ public class PostService {
                 .placeId(post.getPlaceId())
                 .userId(post.getUserId())
                 .content(post.getContent())
+                .placeName(post.getPlace() != null ? post.getPlace().getPlaceName() : null)
                 .image(post.getImage())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
+                .likeCount(postLikeRepository.countByPostId(post.getId()))
+                .commentCount(commentRepository.countByPostId(post.getId()))
                 .build();
 
         return ResponseEntity.ok(postDto);
@@ -222,7 +226,7 @@ public class PostService {
                 ));
     }
 
-
+    @Transactional
     public ResponseEntity<?> deletePost(Long postId, String email) {
         // 1. 사용자 정보 조회
         Member user = memberRepository.findMemberByEmail(email)
