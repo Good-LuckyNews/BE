@@ -110,13 +110,17 @@ public class PostService {
                         .image(post.getImage())
                         .createdAt(post.getCreatedAt())
                         .updatedAt(post.getUpdatedAt())
-                        .likeCount(0)
-                        .commentCount(0)
+                        .likeCount(postLikeRepository.countByPostId(post.getId()))
+                        .commentCount(commentRepository.countByPostId(post.getId()))
                         .build())
                 .collect(Collectors.toList());
 
         // 4. 응답 데이터 생성
-        return ResponseEntity.status(SuccessStatus.POST_LIST_SUCCESS.getHttpStatus()).body(postDtoList);
+        return ResponseEntity.status(SuccessStatus.POST_LIST_SUCCESS.getHttpStatus())
+                .body(ApiResponse.onSuccess(
+                        SuccessStatus.POST_LIST_SUCCESS.getMessage(),
+                        postDtoList
+                ));
     }
 
     public ResponseEntity<?> togglePostLike(Long postId, String email) {
@@ -131,10 +135,11 @@ public class PostService {
         // 3. 사용자가 해당 게시글에 좋아요를 눌렀는지 확인
         Optional<PostLike> existingLike = postLikeRepository.findByUserIdAndPostId(user.getId(), postId);
 
+        String message;
         if (existingLike.isPresent()) {
             // 좋아요가 이미 존재하면 삭제 (좋아요 취소)
             postLikeRepository.delete(existingLike.get());
-            return ResponseEntity.ok("좋아요 취소됨");
+            message = "좋아요 취소됨";
         } else {
             // 좋아요가 없으면 추가
             PostLike newLike = PostLike.builder()
@@ -142,29 +147,52 @@ public class PostService {
                     .postId(postId)
                     .build();
             postLikeRepository.save(newLike);
-            return ResponseEntity.ok("좋아요 추가됨");
+            message = "좋아요 생성됨";
         }
+
+        // 현재 좋아요 개수 조회
+        int likeCount = (int) postLikeRepository.countByPostId(postId);
+
+        // DTO 생성
+        GoodnewsDto.PostLikeResponseDto responseDto = GoodnewsDto.PostLikeResponseDto.builder()
+                .postId(post.getId())
+                .placeId(post.getPlaceId())
+                .userId(user.getId())
+                .likeCount(likeCount)
+                .build();
+
+        // 메시지와 DTO를 함께 반환
+        return ResponseEntity.ok(
+                ApiResponse.onSuccess(message, responseDto)
+        );
     }
 
+
     public ResponseEntity<?> searchPostsByContent(String query) {
-        // 1. 검색 실행
         List<Post> searchResults = postRepository.searchByContent(query);
 
-        // 2. 조회된 게시글을 DTO로 변환하여 리스트로 반환
         List<GoodnewsDto.PostDto> postDtoList = searchResults.stream()
                 .map(post -> GoodnewsDto.PostDto.builder()
                         .postId(post.getId())
                         .placeId(post.getPlaceId())
                         .userId(post.getUserId())
                         .content(post.getContent())
+                        .placeName(post.getPlace() != null ? post.getPlace().getPlaceName() : null)
                         .image(post.getImage())
                         .createdAt(post.getCreatedAt())
                         .updatedAt(post.getUpdatedAt())
+                        .likeCount(postLikeRepository.countByPostId(post.getId()))
+                        .commentCount(commentRepository.countByPostId(post.getId()))
                         .build())
                 .collect(Collectors.toList());
 
-        return ResponseEntity.status(SuccessStatus.POST_LIST_SUCCESS.getHttpStatus()).body(postDtoList);
+        return ResponseEntity.status(SuccessStatus.POST_LIST_SUCCESS.getHttpStatus())
+                .body(ApiResponse.onSuccess(
+                        SuccessStatus.POST_LIST_SUCCESS.getMessage(),
+                        postDtoList
+                ));
     }
+
 
     public ResponseEntity<?> getMyPosts(String email) {
         Member user = memberRepository.findMemberByEmail(email)
@@ -187,7 +215,11 @@ public class PostService {
                         .build())
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(postDtoList);
+        return ResponseEntity.status(SuccessStatus.POST_LIST_SUCCESS.getHttpStatus())
+                .body(ApiResponse.onSuccess(
+                        SuccessStatus.POST_LIST_SUCCESS.getMessage(),
+                        postDtoList
+                ));
     }
 
 
