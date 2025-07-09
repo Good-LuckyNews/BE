@@ -1,7 +1,7 @@
 package com.draconist.goodluckynews.domain.goodNews.service;
 
 import com.draconist.goodluckynews.domain.goodNews.dto.CommentDto;
-import com.draconist.goodluckynews.domain.goodNews.dto.PostDto;
+import com.draconist.goodluckynews.domain.goodNews.dto.GoodnewsDto;
 import com.draconist.goodluckynews.domain.goodNews.entity.Comment;
 import com.draconist.goodluckynews.domain.goodNews.entity.CommentLike;
 import com.draconist.goodluckynews.domain.goodNews.entity.Post;
@@ -77,10 +77,10 @@ public class CommentService {
         List<Post> posts = postRepository.findByIdIn(postIds);
 
         // 5. 게시글과 플레이스를 DTO로 변환하여 반환
-        List<PostDto> postDtoList = posts.stream()
+        List<GoodnewsDto.PostDto> postDtoList = posts.stream()
                 .map(post -> {
                     Place place = placeRepository.findById(post.getPlaceId()).orElse(null);
-                    return PostDto.builder()
+                    return GoodnewsDto.PostDto.builder()
                             .postId(post.getId())
                             .placeId(post.getPlaceId())
                             .placeName(place != null ? place.getPlaceName() : "알 수 없음") // 플레이스 이름 추가

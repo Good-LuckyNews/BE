@@ -28,16 +28,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	//implementation 'com.h2database:h2'
 	compileOnly 'org.projectlombok:lombok'
 	//runtimeOnly 'com.h2database:h2'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-	// ✅ MySQL 드라이버
-	runtimeOnly 'mysql:mysql-connector-java:8.0.33'
 
 	// JJWT (JSON Web Token)
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
@@ -52,7 +48,7 @@ dependencies {
 
 	//mariadb설정
 	//implementation 'org.mariadb.jdbc:mariadb-java-client:3.3.3'
-
+	implementation 'mysql:mysql-connector-java:8.0.33'
 	//jsoup 설정
 	implementation 'org.jsoup:jsoup:1.16.2'
 
