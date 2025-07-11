@@ -9,6 +9,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +41,24 @@ public class ExceptionAdvice {
                 .onFailure(exception.getErrorCode(), exception.getErrorReason(), null);
         log.error("General exception: {}", exception.getErrorReason());
         return new ResponseEntity<>(response, exception.getHttpStatus());
+    }
+
+    //잘못된 타입의 파라미터가 들어왔을 때 처리
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<?>> handleTypeMismatchException(MethodArgumentTypeMismatchException exception) {
+        String name = exception.getName(); // 예: "placeId"
+        String type = exception.getRequiredType() != null ? exception.getRequiredType().getSimpleName() : "알 수 없음";
+
+        String message = String.format("%s 형식이 올바르지 않습니다. %s 타입이어야 합니다.", name, type);
+
+        log.error("Type mismatch error: {}, parameter: {}, required type: {}", exception.getMessage(), name, type);
+
+        ApiResponse<Object> response = ApiResponse.onFailure(
+                "COMMON4001",
+                message,
+                null
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     // 그 외의 모든 예외의 경우
