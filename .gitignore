@@ -42,3 +42,4 @@ application.properties
 */firebase_service_key.json
 src/main/resources/firebase/firebase-service-key.json
 "src/main/resources/firebase/firebase-service-key.json" 
+src/main/resources/firebase/firebase-service-key.json 
