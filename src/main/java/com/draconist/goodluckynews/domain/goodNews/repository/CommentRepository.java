@@ -16,6 +16,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     void deleteById(Long commentId);// 댓글 삭제
     List<Comment> findByParentCommentId(Long parentCommentId);// 부모 댓글 ID를 통해 답글 목록 조회
     public List<Comment> findByParentComment(Comment parentComment);
+
+    boolean existsByParentCommentId(Long commentId);
     // 부모 댓글이 특정 사용자의 댓글인 대댓글 조회
 
 }

@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
@@ -129,7 +130,6 @@ public class CommentService {
 
 
 
-
     // 댓글 좋아요 토글
     public ResponseEntity<?> toggleCommentLike(Long postId, Long commentId, String email) {
         // 0. 게시글 존재 체크
@@ -180,7 +180,8 @@ public class CommentService {
 
 
     //댓글 삭제
-    public ResponseEntity<?> deleteComment(Long postId,Long commentId, String email) {
+    @Transactional
+    public ResponseEntity<?> deleteComment(Long postId, Long commentId, String email) {
         // 1. 사용자 정보 조회
         Member user = memberRepository.findMemberByEmail(email)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
@@ -194,53 +195,62 @@ public class CommentService {
             throw new GeneralException(ErrorStatus.UNAUTHORIZED_ACCESS);
         }
 
-        // 4. 해당 댓글의 좋아요 삭제
+        // 4. 자식 댓글 존재 여부 확인
+        boolean hasChild = commentRepository.existsByParentCommentId(commentId);
+
+        // 5. 좋아요 삭제 (부모 댓글)
         commentLikeRepository.deleteByCommentId(commentId);
 
-        // 5. 댓글 삭제
-        commentRepository.delete(comment);
+        if (hasChild) {
+            // 6. 소프트 딜리트: 내용만 "삭제된 댓글입니다" 등으로 변경
+            comment.setContent("삭제된 댓글입니다.");
+            comment.setDeleted(true);
+            commentRepository.save(comment);
+        } else {
+            // 7. 실제 삭제
+            commentRepository.delete(comment);
+        }
 
-        // 6. 성공 응답 반환
         return ResponseEntity.ok(ApiResponse.onSuccess(
                 SuccessStatus.COMMENT_DELETED.getMessage(),
                 "댓글이 성공적으로 삭제되었습니다."
         ));
     }
 
+
+
     //댓글에 대한 대댓글 작성하기
-    // 대댓글 작성
     public ResponseEntity<?> createReplyToComment(Long postId, CommentDto.CommentCreateDto commentDto, String email, Long parentCommentId) {
-        try {
-            Member user = memberRepository.findMemberByEmail(email)
-                    .orElseThrow(() -> new RuntimeException(ErrorStatus.MEMBER_NOT_FOUND.getMessage()));
+        // 1. 게시글 존재 체크
+        postRepository.findById(postId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.POST_NOT_FOUND));
 
-            Comment parentComment = commentRepository.findById(parentCommentId)
-                    .orElseThrow(() -> new RuntimeException(ErrorStatus.COMMENT_NOT_FOUND.getMessage()));
+        // 2. 회원 조회
+        Member user = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
-            Comment replyComment = Comment.builder()
-                    .postId(parentComment.getPostId())
-                    .userId(user.getId())
-                    .content(commentDto.getContent())
-                    .parentComment(parentComment)
-                    .build();
+        // 3. 부모 댓글 조회
+        Comment parentComment = commentRepository.findById(parentCommentId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.COMMENT_NOT_FOUND));
 
-            commentRepository.save(replyComment);
+        // 4. 대댓글 생성
+        Comment replyComment = Comment.builder()
+                .postId(parentComment.getPostId())
+                .userId(user.getId())
+                .content(commentDto.getContent())
+                .parentComment(parentComment)
+                .build();
 
-            return ResponseEntity.status(SuccessStatus.COMMENT_REPLIES_CREATED.getHttpStatus())
-                    .body(ApiResponse.onSuccess(
-                            SuccessStatus.COMMENT_REPLIES_CREATED.getMessage(),
-                            replyComment
-                    ));
+        commentRepository.save(replyComment);
 
-        } catch (Exception e) {
-            return ResponseEntity.status(ErrorStatus.COMMENT_CREATION_FAILED.getHttpStatus())
-                    .body(ApiResponse.onFailure(
-                            ErrorStatus.COMMENT_CREATION_FAILED.getCode(),
-                            ErrorStatus.COMMENT_CREATION_FAILED.getMessage(),
-                            null
-                    ));
-        }
+        // 5. 성공 응답
+        return ResponseEntity.status(SuccessStatus.COMMENT_REPLIES_CREATED.getHttpStatus())
+                .body(ApiResponse.onSuccess(
+                        SuccessStatus.COMMENT_REPLIES_CREATED.getMessage(),
+                        replyComment
+                ));
     }
+
 
 
 }
