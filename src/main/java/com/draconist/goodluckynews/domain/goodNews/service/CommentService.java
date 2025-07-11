@@ -62,10 +62,13 @@ public class CommentService {
                 ));
     }
 
-
-
     // 특정 게시글의 댓글 목록
     public ResponseEntity<?> getCommentsByPost(Long postId, int page, int size) {
+        // 1. 게시글 존재 체크
+        postRepository.findById(postId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.POST_NOT_FOUND));
+
+        // 2. 댓글 목록 조회
         List<Comment> comments = commentRepository.findByPostId(postId);
 
         List<CommentDto.CommentResultDto> commentDtoList = comments.stream()
@@ -79,7 +82,7 @@ public class CommentService {
                                     .content(reply.getContent())
                                     .createdAt(reply.getCreatedAt())
                                     .likeCount(commentLikeRepository.countByCommentId(reply.getId()))
-                                    .replies(null) // 대댓글의 대댓글이 없다면 null 또는 빈 리스트
+                                    .replies(null)
                                     .build())
                             .collect(Collectors.toList());
 
@@ -97,7 +100,6 @@ public class CommentService {
         return ResponseEntity.status(SuccessStatus.COMMENT_LIST_SUCCESS.getHttpStatus())
                 .body(ApiResponse.of(true, SuccessStatus.COMMENT_LIST_SUCCESS, commentDtoList));
     }
-
 
 
     //사용자의 댓글 조회
@@ -129,19 +131,23 @@ public class CommentService {
 
 
     // 댓글 좋아요 토글
-    public ResponseEntity<?> toggleCommentLike(Long postId,Long commentId, String email) {
+    public ResponseEntity<?> toggleCommentLike(Long postId, Long commentId, String email) {
+        // 0. 게시글 존재 체크
+        postRepository.findById(postId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.POST_NOT_FOUND));
+
         // 1. 사용자 조회
         Member user = memberRepository.findMemberByEmail(email)
-                .orElseThrow(() -> new RuntimeException(ErrorStatus.MEMBER_NOT_FOUND.getMessage()));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         // 2. 댓글 조회
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException(ErrorStatus.COMMENT_NOT_FOUND.getMessage()));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.COMMENT_NOT_FOUND));
 
         // 3. 사용자가 해당 댓글에 좋아요를 눌렀는지 확인
         Optional<CommentLike> existingLike = commentLikeRepository.findByUserIdAndCommentId(user.getId(), commentId);
 
-        boolean liked; // 좋아요 여부 체킹
+        boolean liked;
         SuccessStatus resultStatus;
 
         if (existingLike.isPresent()) {
@@ -159,6 +165,7 @@ public class CommentService {
             liked = true;
             resultStatus = SuccessStatus.COMMENT_LIKE_ADDED;
         }
+
         // 결과 반환
         return ResponseEntity.status(resultStatus.getHttpStatus())
                 .body(ApiResponse.onSuccess(
@@ -169,6 +176,7 @@ public class CommentService {
                         )
                 ));
     }
+
 
 
     //댓글 삭제
