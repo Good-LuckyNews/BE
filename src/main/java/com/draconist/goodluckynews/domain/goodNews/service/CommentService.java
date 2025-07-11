@@ -69,38 +69,35 @@ public class CommentService {
         postRepository.findById(postId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.POST_NOT_FOUND));
 
-        // 2. 댓글 목록 조회
-        List<Comment> comments = commentRepository.findByPostId(postId);
+        // 2. 최상위 댓글만 조회 (parentComment == null)
+        List<Comment> topLevelComments = commentRepository.findByPostIdAndParentCommentIsNull(postId);
 
-        List<CommentDto.CommentResultDto> commentDtoList = comments.stream()
-                .map(comment -> {
-                    List<Comment> replies = commentRepository.findByParentCommentId(comment.getId());
-
-                    List<CommentDto.CommentResultDto> replyDtoList = replies.stream()
-                            .map(reply -> CommentDto.CommentResultDto.builder()
-                                    .commentId(reply.getId())
-                                    .postId(reply.getPostId())
-                                    .content(reply.getContent())
-                                    .createdAt(reply.getCreatedAt())
-                                    .likeCount(commentLikeRepository.countByCommentId(reply.getId()))
-                                    .replies(null)
-                                    .build())
-                            .collect(Collectors.toList());
-
-                    return CommentDto.CommentResultDto.builder()
-                            .commentId(comment.getId())
-                            .postId(comment.getPostId())
-                            .content(comment.getContent())
-                            .createdAt(comment.getCreatedAt())
-                            .likeCount(commentLikeRepository.countByCommentId(comment.getId()))
-                            .replies(replyDtoList)
-                            .build();
-                })
+        // 3. 트리 구조로 replies까지 구성
+        List<CommentDto.CommentResultDto> commentDtoList = topLevelComments.stream()
+                .map(this::toCommentResultDtoWithReplies)
                 .collect(Collectors.toList());
 
         return ResponseEntity.status(SuccessStatus.COMMENT_LIST_SUCCESS.getHttpStatus())
                 .body(ApiResponse.of(true, SuccessStatus.COMMENT_LIST_SUCCESS, commentDtoList));
     }
+
+    // 재귀적으로 replies를 구성
+    private CommentDto.CommentResultDto toCommentResultDtoWithReplies(Comment comment) {
+        List<Comment> replies = commentRepository.findByParentCommentId(comment.getId());
+        List<CommentDto.CommentResultDto> replyDtoList = replies.stream()
+                .map(this::toCommentResultDtoWithReplies)
+                .collect(Collectors.toList());
+
+        return CommentDto.CommentResultDto.builder()
+                .commentId(comment.getId())
+                .postId(comment.getPostId())
+                .content(comment.getContent())
+                .createdAt(comment.getCreatedAt())
+                .likeCount(commentLikeRepository.countByCommentId(comment.getId()))
+                .replies(replyDtoList)
+                .build();
+    }
+
 
 
     //사용자의 댓글 조회
@@ -108,23 +105,35 @@ public class CommentService {
         Member member = memberRepository.findMemberByEmail(email)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
-        List<Comment> userComments = commentRepository.findByUserId(member.getId());
+        // 1. 내 댓글 중 최상위(부모 없는) 댓글만 조회
+        List<Comment> topLevelComments = commentRepository.findByUserIdAndParentCommentIsNull(member.getId());
 
-        List<CommentDto.CommentResultDto> commentDtoList = userComments.stream()
-                .map(comment -> CommentDto.CommentResultDto.builder()
-                        .commentId(comment.getId())
-                        .postId(comment.getPostId())
-                        .content(comment.getContent())
-                        .createdAt(comment.getCreatedAt())
-                        .likeCount(commentLikeRepository.countByCommentId(comment.getId()))
-                        .replies(null) // 내 댓글 목록에서는 대댓글까지 보여주지 않는다면 null 또는 빈 리스트
-                        .build())
+        // 2. 트리 구조로 replies까지 구성
+        List<CommentDto.CommentResultDto> commentDtoList = topLevelComments.stream()
+                .map(comment -> toMyCommentResultDtoWithReplies(comment, member.getId()))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.onSuccess(
                 SuccessStatus.COMMENT_LIST_SUCCESS.getMessage(),
                 commentDtoList
         ));
+    }
+
+    // 재귀적으로 replies를 구성 (내가 쓴 대댓글만)
+    private CommentDto.CommentResultDto toMyCommentResultDtoWithReplies(Comment comment, Long userId) {
+        List<Comment> replies = commentRepository.findByUserIdAndParentCommentId(userId, comment.getId());
+        List<CommentDto.CommentResultDto> replyDtoList = replies.stream()
+                .map(reply -> toMyCommentResultDtoWithReplies(reply, userId))
+                .collect(Collectors.toList());
+
+        return CommentDto.CommentResultDto.builder()
+                .commentId(comment.getId())
+                .postId(comment.getPostId())
+                .content(comment.getContent())
+                .createdAt(comment.getCreatedAt())
+                .likeCount(commentLikeRepository.countByCommentId(comment.getId()))
+                .replies(replyDtoList)
+                .build();
     }
 
 
