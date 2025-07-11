@@ -33,16 +33,6 @@ public class CommentController {
         return commentService.getCommentsByPost(postId, page, size);
     }
 
-    // 대댓글 작성
-    @PostMapping("/{commentId}/replies")
-    public ResponseEntity<?> createReplyToComment(
-            @PathVariable Long postId,
-            @PathVariable Long commentId,
-            @RequestBody CommentDto.CommentCreateDto commentDto,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return commentService.createReplyToComment(postId, commentDto, userDetails.getEmail(), commentId);
-    }
-
     // 댓글 좋아요 토글
     @PostMapping("/{commentId}/like")
     public ResponseEntity<?> toggleCommentLike(
@@ -61,4 +51,13 @@ public class CommentController {
         return commentService.deleteComment(postId, commentId, userDetails.getEmail());
     }
 
+    // 대댓글 작성
+    @PostMapping("/{commentId}/replies")
+    public ResponseEntity<?> createReplyToComment(
+            @PathVariable Long postId,
+            @PathVariable Long commentId,
+            @RequestBody CommentDto.CommentCreateDto commentDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return commentService.createReplyToComment(postId, commentDto, userDetails.getEmail(), commentId);
+    }
 }
