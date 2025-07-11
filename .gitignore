@@ -39,3 +39,4 @@ out/
 ### custom ###
 application-secret.properties
 application.properties
+*/firebase_service_key.json

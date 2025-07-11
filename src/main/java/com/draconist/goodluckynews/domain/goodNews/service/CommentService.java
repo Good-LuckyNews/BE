@@ -1,5 +1,7 @@
 package com.draconist.goodluckynews.domain.goodNews.service;
 
+import com.draconist.goodluckynews.domain.FcmToken.entity.FcmToken;
+import com.draconist.goodluckynews.domain.FcmToken.repository.FcmTokenRepository;
 import com.draconist.goodluckynews.domain.goodNews.dto.CommentDto;
 import com.draconist.goodluckynews.domain.goodNews.dto.PostDto;
 import com.draconist.goodluckynews.domain.goodNews.entity.Comment;
@@ -14,6 +16,7 @@ import com.draconist.goodluckynews.domain.member.repository.MemberRepository;
 import com.draconist.goodluckynews.global.enums.statuscode.ErrorStatus;
 import com.draconist.goodluckynews.global.enums.statuscode.SuccessStatus;
 import com.draconist.goodluckynews.global.exception.GeneralException;
+import com.draconist.goodluckynews.global.firebase.FirebaseCloudMessageService;
 import com.draconist.goodluckynews.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +36,8 @@ public class CommentService {
     private final PostLikeRepository postLikeRepository;
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
+    private final FirebaseCloudMessageService firebaseCloudMessageService;
+    private final FcmTokenRepository fcmTokenRepository;
 
     public ResponseEntity<?> createComment(CommentDto commentDto, String email) {
         try {
@@ -189,31 +194,57 @@ public class CommentService {
 
     public ResponseEntity<?> createReplyToComment(CommentDto commentDto, String email, Long commentId) {
         try {
-            // 1. 사용자 정보 조회
+            // 1. 답글 작성자 조회
             Member user = memberRepository.findMemberByEmail(email)
                     .orElseThrow(() -> new RuntimeException(ErrorStatus.MEMBER_NOT_FOUND.getMessage()));
 
-            // 2. 댓글 조회 (답글을 달기 위한 부모 댓글)
+            // 2. 부모 댓글 조회
             Comment parentComment = commentRepository.findById(commentId)
                     .orElseThrow(() -> new RuntimeException(ErrorStatus.COMMENT_NOT_FOUND.getMessage()));
 
-            // 3. 답글 생성
+            // 3. 답글 생성 및 저장
             Comment replyComment = Comment.builder()
-                    .postId(parentComment.getPostId())  // 부모 댓글과 동일한 게시글에 답글 추가
+                    .postId(parentComment.getPostId())
                     .userId(user.getId())
                     .content(commentDto.getContent())
-                    .parentComment(parentComment)  // 부모 댓글 설정
+                    .parentComment(parentComment)
                     .build();
-
-            // 4. 댓글 저장
             commentRepository.save(replyComment);
+
+            // 4. 부모 댓글 작성자에게 알림 보내기 (본인이 자기 댓글에 답글 달면 X)
+            if (!parentComment.getUserId().equals(user.getId())) {
+                // 부모 댓글 작성자 조회
+                Member parentMember = memberRepository.findById(parentComment.getUserId())
+                        .orElse(null);
+
+                if (parentMember != null) {
+                    // 부모 댓글 작성자의 모든 활성 FCM 토큰 조회
+                    List<FcmToken> tokens = fcmTokenRepository.findByMemberAndActiveTrue(parentMember);
+
+                    if (!tokens.isEmpty()) {
+                        String title = "내 댓글에 답글이 달렸어요!";
+                        String body = user.getName() + "님이 내 댓글에 답글을 남겼습니다: " + commentDto.getContent();
+
+                        // 각 토큰마다 FCM 알림 발송
+                        for (FcmToken token : tokens) {
+                            firebaseCloudMessageService.sendMessageTo(
+                                    token.getToken(),
+                                    title,
+                                    body
+                            );
+                        }
+                    }
+                }
+            }
 
             return ResponseEntity.status(SuccessStatus.COMMENT_CREATED.getHttpStatus()).body(SuccessStatus.COMMENT_CREATED);
         } catch (Exception e) {
             return ResponseEntity.status(ErrorStatus.COMMENT_CREATION_FAILED.getHttpStatus())
                     .body(ErrorStatus.COMMENT_CREATION_FAILED);
         }
-    }//댓글에 대한 답글 작성하기
+    }
+
+//댓글에 대한 답글 작성하기
 
     public ResponseEntity<?> commentAlarm(String email) {
         // 1. 사용자 정보 조회
