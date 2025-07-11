@@ -19,7 +19,7 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<?> createComment(
             @PathVariable Long postId,
-            @RequestBody CommentDto commentDto,
+            @RequestBody CommentDto.CommentCreateDto commentDto,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         return commentService.createComment(postId, commentDto, userDetails.getEmail());
     }
@@ -38,7 +38,7 @@ public class CommentController {
     public ResponseEntity<?> createReplyToComment(
             @PathVariable Long postId,
             @PathVariable Long commentId,
-            @RequestBody CommentDto commentDto,
+            @RequestBody CommentDto.CommentCreateDto commentDto,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         return commentService.createReplyToComment(postId, commentDto, userDetails.getEmail(), commentId);
     }
