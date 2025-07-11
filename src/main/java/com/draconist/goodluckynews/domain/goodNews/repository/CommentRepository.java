@@ -18,6 +18,11 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     public List<Comment> findByParentComment(Comment parentComment);
 
     boolean existsByParentCommentId(Long commentId);
+
+    List<Comment> findByPostIdAndParentCommentIsNull(Long postId);
+    List<Comment> findByUserIdAndParentCommentIsNull(Long UserId);
+
+    List<Comment> findByUserIdAndParentCommentId(Long userId, Long id);
     // 부모 댓글이 특정 사용자의 댓글인 대댓글 조회
 
 }
