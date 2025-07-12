@@ -36,4 +36,7 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "parent_comment_id")
     private Comment parentComment;
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
 }
