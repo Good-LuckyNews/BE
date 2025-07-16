@@ -61,11 +61,36 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
             sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+            # 🔧 [변경됨] 이미 8080포트 사용하는 컨테이너가 있을 경우 중지 및 삭제
+            running=$(sudo docker ps -q --filter "publish=8080")
+            if [ -n "$running" ]; then
+              echo "🛑 기존 컨테이너 중지 및 삭제"
+              sudo docker stop $running
+              sudo docker rm $running
+            fi
+
+            echo "⬇️ 이미지 Pull"
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/goodluckynews:latest
-            sudo docker stop $(sudo docker ps -a -q)
-            sudo docker run -d --log-driver=syslog -p 8080:8080 -e TZ=Asia/Seoul -e SPRING_PROFILES_ACTIVE=dev ${{ secrets.DOCKER_USERNAME }}/goodluckynews:latest
-            sudo docker rm $(sudo docker ps --filter 'status=exited' -a -q)
-            sudo docker image prune -a -f
+
+            echo "🚀 새로운 컨테이너 실행"
+            sudo docker run -d \
+              --log-driver=syslog \
+              -p 8080:8080 \
+              -e TZ=Asia/Seoul \
+              -e SPRING_PROFILES_ACTIVE=dev \
+              ${{ secrets.DOCKER_USERNAME }}/goodluckynews:latest
+
+            # 🔧 [변경됨] 종료된 컨테이너가 있는 경우만 제거
+            exited=$(sudo docker ps -a -q -f status=exited)
+            if [ -n "$exited" ]; then
+              echo "🧹 종료된 컨테이너 제거"
+              sudo docker rm $exited
+            fi
+
+            # 🔧 [변경됨] 이미지 정리 작업 중복 오류 회피
+            echo "🧼 이미지 정리"
+            sudo docker image prune -a -f || echo "⚠️ 이미지 정리 작업이 이미 진행 중입니다."
 
       - name: Check logs
         uses: appleboy/ssh-action@master
