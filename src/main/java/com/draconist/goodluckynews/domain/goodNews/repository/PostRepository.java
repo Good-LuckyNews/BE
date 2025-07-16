@@ -13,6 +13,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> searchByContent(@Param("query") String query);
     List<Post> findByUserId(Long userId); // 특정 사용자의 모든 게시글 조회
     // 🔹 여러 개의 게시글 ID를 한 번에 조회하는 기능 추가
+    @Query("SELECT p FROM Post p JOIN FETCH Place pl ON p.placeId = pl.id WHERE p.userId = :userId")
+    List<Post> findByUserIdWithPlace(@Param("userId") Long userId);
+    List<Post> findByPlaceIdOrderByCreatedAtDesc(Long placeId);
     List<Post> findByIdIn(Set<Long> postIds);
     void deleteById(Long postId);//삭제 기능 추가
 }

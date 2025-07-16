@@ -9,49 +9,55 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/comments")
+@RequestMapping("/api/posts/{postId}/comments") // 포스트 별 댓글
 @RequiredArgsConstructor
 public class CommentController {
+
     private final CommentService commentService;
 
+    // 댓글 생성
     @PostMapping
     public ResponseEntity<?> createComment(
-            @RequestBody CommentDto commentDto,
+            @PathVariable Long postId,
+            @RequestBody CommentDto.CommentCreateDto commentDto,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return commentService.createComment(commentDto, userDetails.getEmail());
+        return commentService.createComment(postId, commentDto, userDetails.getEmail());
     }
 
-    @GetMapping("/mypage")  //
-    public ResponseEntity<?> getMyComments(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return commentService.getMyComments(userDetails.getEmail());
+    // 포스트별 댓글 전체 조회
+    @GetMapping
+    public ResponseEntity<?> getCommentsByPost(
+            @PathVariable Long postId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        return commentService.getCommentsByPost(postId, page, size);
     }
 
-    @GetMapping()
-    public ResponseEntity<?> getAllComments(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return commentService.getAllComments();
-    }
-    //댓글 전체조회
-
+    // 댓글 좋아요 토글
     @PostMapping("/{commentId}/like")
     public ResponseEntity<?> toggleCommentLike(
+            @PathVariable Long postId,
             @PathVariable Long commentId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return commentService.toggleCommentLike(commentId, userDetails.getEmail());
-    }//댓글 좋아요
+        return commentService.toggleCommentLike(postId, commentId, userDetails.getEmail());
+    }
 
-    @PostMapping("/reply/{commentId}")
+    // 댓글 삭제
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<?> deleteComment(
+            @PathVariable Long postId,
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return commentService.deleteComment(postId, commentId, userDetails.getEmail());
+    }
+
+    // 대댓글 작성
+    @PostMapping("/{commentId}/replies")
     public ResponseEntity<?> createReplyToComment(
+            @PathVariable Long postId,
             @PathVariable Long commentId,
-            @RequestBody CommentDto commentDto,
+            @RequestBody CommentDto.CommentCreateDto commentDto,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return commentService.createReplyToComment(commentDto, userDetails.getEmail(),commentId);
-    } //특정 댓글에 reply달기
-
-
-    @GetMapping("/myalarm")
-    public ResponseEntity<?> commentAlarm(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return commentService.commentAlarm(userDetails.getEmail());
-    }//내 댓글에 달린 댓글
-
+        return commentService.createReplyToComment(postId, commentDto, userDetails.getEmail(), commentId);
+    }
 }

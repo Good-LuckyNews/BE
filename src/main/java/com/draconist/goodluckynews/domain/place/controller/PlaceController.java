@@ -1,5 +1,6 @@
 package com.draconist.goodluckynews.domain.place.controller;
 
+import com.draconist.goodluckynews.domain.place.dto.PlaceCreateDTO;
 import com.draconist.goodluckynews.domain.place.dto.PlaceDTO;
 import com.draconist.goodluckynews.domain.place.service.PlaceService;
 import com.draconist.goodluckynews.global.jwt.dto.CustomUserDetails;
@@ -18,7 +19,7 @@ public class PlaceController {
     private final PlaceService placeService;
     @PostMapping()
     public ResponseEntity<?> createPlace(@RequestParam(value = "image",required = false) MultipartFile image,
-                @ModelAttribute PlaceDTO communityDTO,
+                @ModelAttribute PlaceCreateDTO communityDTO,
                 @AuthenticationPrincipal CustomUserDetails customUserDetails)throws IOException {
         return  placeService.createPlace(image, communityDTO, customUserDetails.getEmail());
     } //플레이스 생성
@@ -33,10 +34,12 @@ public class PlaceController {
     @GetMapping
     public ResponseEntity<?> getAllPlaces(
             @RequestParam(defaultValue = "0") int page,  // 기본값 0
-            @RequestParam(defaultValue = "10") int size // 기본값 10
+            @RequestParam(defaultValue = "10") int size, // 기본값 10
+            @AuthenticationPrincipal CustomUserDetails userDetails // 🔹 로그인 사용자 정보 가져오기
     ) {
-        return placeService.findAllWithPagination(page, size);
-    }//플레이스 전체 조회
+        return placeService.findAllWithPagination(page, size, userDetails.getEmail());
+    }
+//플레이스 전체 조회
 
 
     @GetMapping("/{placeId}")
@@ -44,12 +47,12 @@ public class PlaceController {
         return placeService.getPlaceById(placeId);
     }//특정 플레이스 상세 조회
 
-    @PostMapping("/{placeId}")
+    @PatchMapping("/{placeId}")
     public ResponseEntity<?> updatePlace(
             @PathVariable Long placeId,
             @RequestParam(value = "image", required = false) MultipartFile image,
-            @RequestParam(value = "placeName") String placeName,
-            @RequestParam(value = "placeDetails") String placeDetails,
+            @RequestParam(value = "placeName", required = false)  String placeName,
+            @RequestParam(value = "placeDetails", required = false) String placeDetails,
             @AuthenticationPrincipal CustomUserDetails customUserDetails) throws IOException {
 
         PlaceDTO placeDTO = PlaceDTO.builder()
@@ -69,8 +72,13 @@ public class PlaceController {
     }//플레이스 북마크
 
     @GetMapping("/mypage")
-    public ResponseEntity<?> getMyPlaces(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return placeService.getMyPlaces(customUserDetails.getEmail());
-    }// 내가 만든 플레이스 조회
+    public ResponseEntity<?> getMyPlaces(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return placeService.getMyPlaces(customUserDetails.getEmail(), page, size);
+    }
+// 내가 만든 플레이스 조회
 
 }
