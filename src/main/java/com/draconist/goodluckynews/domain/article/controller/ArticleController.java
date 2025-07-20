@@ -1,9 +1,6 @@
 package com.draconist.goodluckynews.domain.article.controller;
 
-import com.draconist.goodluckynews.domain.article.dto.ArticleDto;
-import com.draconist.goodluckynews.domain.article.dto.CompletedDegreeDto;
-import com.draconist.goodluckynews.domain.article.dto.HeartDto;
-import com.draconist.goodluckynews.domain.article.dto.SearchArticleDto;
+import com.draconist.goodluckynews.domain.article.dto.*;
 import com.draconist.goodluckynews.domain.article.entity.ArticleEntity;
 import com.draconist.goodluckynews.domain.article.service.ArticleService;
 import com.draconist.goodluckynews.domain.article.service.CompletedTimeService;
@@ -317,5 +314,17 @@ public class ArticleController {
 
     // 날짜 형식을 맞추기 위한 포맷터를 정의합니다.
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH);
+
+
+    // 처음으로 완료한 시간 반환
+    @GetMapping("/user/articles/completed/first-and-today")
+    public ResponseEntity<?> getFirstCreatedAtAndToday(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        // 1. 이메일로 회원 id 찾기
+        Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        FirstCreatedAndTodayDto dto = completedTimeService.getFirstCreatedAndToday(member.getId());
+        return ResponseEntity.ok(dto);
+    }
 
 }

@@ -2,6 +2,7 @@ package com.draconist.goodluckynews.domain.article.service;
 
 import com.draconist.goodluckynews.domain.article.dto.ArticleLongContentDto;
 import com.draconist.goodluckynews.domain.article.dto.CompletedDegreeDto;
+import com.draconist.goodluckynews.domain.article.dto.FirstCreatedAndTodayDto;
 import com.draconist.goodluckynews.domain.article.dto.SevenCompletedGraphDto;
 import com.draconist.goodluckynews.domain.article.entity.ArticleEntity;
 import com.draconist.goodluckynews.domain.article.entity.CompletedTime;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -308,6 +310,21 @@ import java.util.List;
                 .build();
     }
 
+    public FirstCreatedAndTodayDto getFirstCreatedAndToday(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
+        CompletedTime first =
+                completedTimeRepository.findFirstByMemberOrderByCreatedAtAsc(member)
+                        .orElseThrow(() -> new GeneralException(ErrorStatus._COMPLETED_NOTFOUND));
+
+        LocalDateTime firstCreatedAt = first.getCreatedAt();
+        LocalDateTime today = LocalDate.now().atStartOfDay();
+
+        return FirstCreatedAndTodayDto.builder()
+                .firstCreatedAt(firstCreatedAt)
+                .today(today)
+                .build();
+    }
 
 }
