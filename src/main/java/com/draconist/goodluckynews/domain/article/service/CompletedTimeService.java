@@ -109,6 +109,8 @@ import java.util.List;
                 .fifth(completedArticlesPerDay[4])
                 .sixth(completedArticlesPerDay[5])
                 .seventh(completedArticlesPerDay[6])
+                .startDate(startOfWeek)
+                .endDate(endOfWeek)
                 .build();
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -151,6 +153,8 @@ import java.util.List;
                 .third(completedArticlesPerWeek[2])
                 .fourth(completedArticlesPerWeek[3])
                 .fifth(completedArticlesPerWeek[4]) // 주가 5개 초과일 수 없음
+                .startDate(firstDayOfLastMonth)
+                .endDate(lastDayOfLastMonth)
                 .build();
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -204,6 +208,8 @@ import java.util.List;
                 .fourth(completedArticlesPerMonth[3])
                 .fifth(completedArticlesPerMonth[4])
                 .sixth(completedArticlesPerMonth[5])   // 6개월 전 월
+                .startDate(startOfSixMonthsAgo)
+                .endDate(endOfToday)
                 .build();
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -214,14 +220,11 @@ import java.util.List;
 //전체기간 기준 6등분
     @Transactional
     public ResponseEntity<?> getCompletedTimesAll(Long userId) {
-        // jwt 확인 (간략화)
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
-        // 전체 기간 동안 완료된 기사 조회
         List<CompletedTime> completedTimes = completedTimeRepository.findCompletedTimesAllTime(userId);
 
-        // completedTimes가 비어있으면 바로 0값으로 반환
         if (completedTimes.isEmpty()) {
             SevenCompletedGraphDto emptyResponseDto = SevenCompletedGraphDto.builder()
                     .first(0)
@@ -231,53 +234,45 @@ import java.util.List;
                     .fifth(0)
                     .sixth(0)
                     .seventh(0)
+                    .startDate(null)
+                    .endDate(null)
                     .build();
             return ResponseEntity.status(HttpStatus.OK)
                     .body(ApiResponse.onSuccess(emptyResponseDto));
         }
 
-        // 전체 기간동안 완료한 기사를 최신 순으로 정렬
-        completedTimes.sort((t1, t2) -> t2.getCompletedAt().compareTo(t1.getCompletedAt())); // 최신 기사가 first에 오도록 정렬
+        completedTimes.sort((t1, t2) -> t2.getCompletedAt().compareTo(t1.getCompletedAt()));
 
-        // 가장 오래된 날짜와 최신 날짜 구하기
-        LocalDateTime minDate = completedTimes.get(completedTimes.size() - 1).getCompletedAt(); // 가장 오래된 날짜
-        LocalDateTime maxDate = completedTimes.get(0).getCompletedAt(); // 가장 최신 날짜
+        LocalDateTime minDate = completedTimes.get(completedTimes.size() - 1).getCompletedAt();
+        LocalDateTime maxDate = completedTimes.get(0).getCompletedAt();
 
-        // 기간 범위를 6등분하기 위한 interval 계산
         long totalDuration = ChronoUnit.DAYS.between(minDate, maxDate);
 
-        // 기간이 6일 미만일 경우 periodDuration이 0이 될 수 있기 때문에 최소 1로 설정
         long periodDuration = totalDuration / 6;
         if (periodDuration == 0) {
-            periodDuration = 1; // 6일 미만일 경우 1일 기준으로 간주
+            periodDuration = 1;
         }
 
-        // 6등분된 각 구간에 대해 완료된 기사 수를 셈
         int[] completedArticlesPerPeriod = new int[6];
-
         for (CompletedTime completedTime : completedTimes) {
             long daysBetween = ChronoUnit.DAYS.between(minDate, completedTime.getCompletedAt());
-
-            // 해당 기사가 속하는 기간을 계산
             int periodIndex = (int) (daysBetween / periodDuration);
-
-            // 만약 periodIndex가 6보다 크거나 같으면 마지막 기간에 포함시킴
             if (periodIndex >= 6) {
                 periodIndex = 5;
             }
-
             completedArticlesPerPeriod[periodIndex] += completedTime.getDegree();
         }
 
-        // SevenCompletedGraphDto에 완료된 기사 개수 세팅 (최신이 first에 오도록)
         SevenCompletedGraphDto responseDto = SevenCompletedGraphDto.builder()
-                .first(completedArticlesPerPeriod[0])   // 가장 최신 구간
+                .first(completedArticlesPerPeriod[0])
                 .second(completedArticlesPerPeriod[1])
                 .third(completedArticlesPerPeriod[2])
                 .fourth(completedArticlesPerPeriod[3])
                 .fifth(completedArticlesPerPeriod[4])
                 .sixth(completedArticlesPerPeriod[5])
-                .seventh(0)  // 만약 구간이 6개보다 적으면 나머지는 0
+                .seventh(0)
+                .startDate(minDate)
+                .endDate(maxDate)
                 .build();
 
         return ResponseEntity.status(HttpStatus.OK)

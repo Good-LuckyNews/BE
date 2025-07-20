@@ -3,6 +3,8 @@ package com.draconist.goodluckynews.domain.article.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Builder
 public class SevenCompletedGraphDto {
@@ -13,4 +15,6 @@ public class SevenCompletedGraphDto {
     private Integer fifth;
     private Integer sixth;
     private Integer seventh;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 }
