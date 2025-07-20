@@ -2,6 +2,7 @@ package com.draconist.goodluckynews.domain.article.service;
 
 import com.draconist.goodluckynews.domain.article.dto.ArticleLongContentDto;
 import com.draconist.goodluckynews.domain.article.dto.CompletedDegreeDto;
+import com.draconist.goodluckynews.domain.article.dto.FirstCreatedAndTodayDto;
 import com.draconist.goodluckynews.domain.article.dto.SevenCompletedGraphDto;
 import com.draconist.goodluckynews.domain.article.entity.ArticleEntity;
 import com.draconist.goodluckynews.domain.article.entity.CompletedTime;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -308,6 +310,25 @@ import java.util.List;
                 .build();
     }
 
+    public FirstCreatedAndTodayDto getFirstCreatedAndToday(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+        //가장과거
+        CompletedTime first =
+                completedTimeRepository.findFirstByMemberOrderByCreatedAtAsc(member)
+                        .orElseThrow(() -> new GeneralException(ErrorStatus._COMPLETED_NOTFOUND));
 
+        // 가장 마지막(가장 최근)
+        CompletedTime last = completedTimeRepository.findFirstByMemberOrderByCreatedAtDesc(member)
+                .orElseThrow(() -> new GeneralException(ErrorStatus._COMPLETED_NOTFOUND));
+
+        LocalDateTime firstCreatedAt = first.getCreatedAt();
+        LocalDateTime lastCreatedAt = last.getCreatedAt();
+
+        return FirstCreatedAndTodayDto.builder()
+                .firstCreatedAt(firstCreatedAt)
+                .today(lastCreatedAt) // now today는 마지막 완료 날짜
+                .build();
+    }
 
 }
