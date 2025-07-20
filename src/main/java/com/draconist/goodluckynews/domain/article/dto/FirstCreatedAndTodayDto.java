@@ -13,5 +13,5 @@ import java.time.LocalDateTime;
 @Builder
 public class FirstCreatedAndTodayDto {
     private LocalDateTime firstCreatedAt;
-    private LocalDateTime today;
+    private LocalDateTime lastUpdatedAt;
 }

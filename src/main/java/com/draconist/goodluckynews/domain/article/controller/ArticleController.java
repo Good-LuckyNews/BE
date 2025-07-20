@@ -317,14 +317,14 @@ public class ArticleController {
 
 
     // 처음으로 완료한 시간 반환
-    @GetMapping("/user/articles/completed/first-and-today")
+    @GetMapping("/user/articles/completed/first-and-lastday")
     public ResponseEntity<?> getFirstCreatedAtAndToday(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         // 1. 이메일로 회원 id 찾기
         Member member = memberRepository.findMemberByEmail(customUserDetails.getEmail())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         FirstCreatedAndTodayDto dto = completedTimeService.getFirstCreatedAndToday(member.getId());
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(ApiResponse.onSuccess("유저의 첫/마지막 기사 완료 기록 조회 성공", dto));
     }
 
 }
