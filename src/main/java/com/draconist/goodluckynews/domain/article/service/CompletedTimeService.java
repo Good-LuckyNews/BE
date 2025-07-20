@@ -327,7 +327,7 @@ import java.util.List;
 
         return FirstCreatedAndTodayDto.builder()
                 .firstCreatedAt(firstCreatedAt)
-                .today(lastCreatedAt) // now today는 마지막 완료 날짜
+                .lastUpdatedAt(lastCreatedAt) // now today는 마지막 완료 날짜
                 .build();
     }
 
