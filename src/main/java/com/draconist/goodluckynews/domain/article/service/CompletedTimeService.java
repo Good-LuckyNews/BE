@@ -313,17 +313,21 @@ import java.util.List;
     public FirstCreatedAndTodayDto getFirstCreatedAndToday(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-
+        //가장과거
         CompletedTime first =
                 completedTimeRepository.findFirstByMemberOrderByCreatedAtAsc(member)
                         .orElseThrow(() -> new GeneralException(ErrorStatus._COMPLETED_NOTFOUND));
 
+        // 가장 마지막(가장 최근)
+        CompletedTime last = completedTimeRepository.findFirstByMemberOrderByCreatedAtDesc(member)
+                .orElseThrow(() -> new GeneralException(ErrorStatus._COMPLETED_NOTFOUND));
+
         LocalDateTime firstCreatedAt = first.getCreatedAt();
-        LocalDateTime today = LocalDate.now().atStartOfDay();
+        LocalDateTime lastCreatedAt = last.getCreatedAt();
 
         return FirstCreatedAndTodayDto.builder()
                 .firstCreatedAt(firstCreatedAt)
-                .today(today)
+                .today(lastCreatedAt) // now today는 마지막 완료 날짜
                 .build();
     }
 

@@ -34,4 +34,6 @@ public interface CompletedTimeRepository extends JpaRepository<CompletedTime, Lo
     //completedTime 조회
     Optional<CompletedTime> findByMemberIdAndArticleId(Long memberId, Long articleId);
     Optional<CompletedTime> findFirstByMemberOrderByCreatedAtAsc(Member member);
+    Optional<CompletedTime> findFirstByMemberOrderByCreatedAtDesc(Member member);
+
 }
