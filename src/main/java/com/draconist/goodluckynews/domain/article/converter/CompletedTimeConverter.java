@@ -7,6 +7,8 @@ import com.draconist.goodluckynews.domain.article.entity.ArticleEntity;
 import com.draconist.goodluckynews.domain.article.entity.Heart;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 public class CompletedTimeConverter {
 
@@ -31,7 +33,11 @@ public class CompletedTimeConverter {
                 .build();
     }
     // 배열로 받아 패딩하여 SevenCompletedGraphDto로 만들어줌
-    public SevenCompletedGraphDto toSevenCompletedGraphDto(int[] values) {
+    public SevenCompletedGraphDto toSevenCompletedGraphDto(
+            int[] values,
+            LocalDateTime firstCompletedAt,
+            LocalDateTime lastCompletedAt
+    ) {
         int[] padded = new int[7];
         for (int i = 0; i < 7; i++) {
             padded[i] = (values != null && i < values.length) ? values[i] : 0;
@@ -44,6 +50,13 @@ public class CompletedTimeConverter {
                 .fifth(padded[4])
                 .sixth(padded[5])
                 .seventh(padded[6])
+                .firstCompletedAt(firstCompletedAt)
+                .lastCompletedAt(lastCompletedAt)
                 .build();
+    }
+
+    // (기존: 날짜 정보 필요 없을 땐 null로)
+    public SevenCompletedGraphDto toSevenCompletedGraphDto(int[] values) {
+        return toSevenCompletedGraphDto(values, null, null);
     }
 }

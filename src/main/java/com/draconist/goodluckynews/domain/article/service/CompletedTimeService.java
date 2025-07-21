@@ -103,10 +103,12 @@ import java.util.List;
                 completedArticlesPerDay[dayOfWeek] += completedTime.getDegree();
             }
         }
+        LocalDateTime firstCompletedAt = getFirstCompletedAt(userId, startOfWeek, endOfWeek);
+        LocalDateTime lastCompletedAt = getLastCompletedAt(userId, startOfWeek, endOfWeek);
 
         // SevenCompletedGraphDto에 완료된 기사 개수 세팅
-        SevenCompletedGraphDto responseDto = completedTimeConverter.toSevenCompletedGraphDto(completedArticlesPerDay);
-
+        SevenCompletedGraphDto responseDto = completedTimeConverter
+                .toSevenCompletedGraphDto(completedArticlesPerDay, firstCompletedAt, lastCompletedAt);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.onSuccess(responseDto));
 
@@ -141,7 +143,11 @@ import java.util.List;
         }
 
         // SevenCompletedGraphDto에 완료된 기사 개수 세팅
-        SevenCompletedGraphDto responseDto = completedTimeConverter.toSevenCompletedGraphDto(completedArticlesPerWeek);
+        LocalDateTime firstCompletedAt = getFirstCompletedAt(userId, firstDayOfLastMonth, lastDayOfLastMonth);
+        LocalDateTime lastCompletedAt = getLastCompletedAt(userId, firstDayOfLastMonth, lastDayOfLastMonth);
+
+        SevenCompletedGraphDto responseDto = completedTimeConverter.toSevenCompletedGraphDto(
+                completedArticlesPerWeek, firstCompletedAt, lastCompletedAt);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.onSuccess(responseDto));
@@ -187,8 +193,12 @@ import java.util.List;
         }
 
         // SevenCompletedGraphDto에 완료된 기사 개수 세팅
-        SevenCompletedGraphDto responseDto = completedTimeConverter.toSevenCompletedGraphDto(completedArticlesPerMonth);
+        LocalDateTime firstCompletedAt = getFirstCompletedAt(userId, startOfSixMonthsAgo, endOfToday);
+        LocalDateTime lastCompletedAt  = getLastCompletedAt(userId, startOfSixMonthsAgo, endOfToday);
 
+        SevenCompletedGraphDto responseDto = completedTimeConverter.toSevenCompletedGraphDto(
+                completedArticlesPerMonth, firstCompletedAt, lastCompletedAt
+        );
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.onSuccess(responseDto));
     }
@@ -245,9 +255,21 @@ import java.util.List;
             completedArticlesPerPeriod[periodIndex] += completedTime.getDegree();
         }
 
-        // SevenCompletedGraphDto에 완료된 기사 개수 세팅 (최신이 first에 오도록)
-        SevenCompletedGraphDto responseDto = completedTimeConverter.toSevenCompletedGraphDto(completedArticlesPerPeriod);
+        //가장과거
+        CompletedTime first =
+                completedTimeRepository.findFirstByMemberOrderByCreatedAtAsc(member)
+                        .orElseThrow(() -> new GeneralException(ErrorStatus._COMPLETED_NOTFOUND));
 
+        // 가장 마지막(가장 최근)
+        CompletedTime last = completedTimeRepository.findFirstByMemberOrderByCreatedAtDesc(member)
+                .orElseThrow(() -> new GeneralException(ErrorStatus._COMPLETED_NOTFOUND));
+
+        LocalDateTime firstCreatedAt = first.getCreatedAt();
+        LocalDateTime lastCreatedAt = last.getCreatedAt();
+
+        SevenCompletedGraphDto responseDto = completedTimeConverter.toSevenCompletedGraphDto(
+                completedArticlesPerPeriod, firstCreatedAt, lastCreatedAt
+        );
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.onSuccess(responseDto));
     }
@@ -284,5 +306,17 @@ import java.util.List;
                 .lastUpdatedAt(lastCreatedAt) // now today는 마지막 완료 날짜
                 .build();
     }
+    private LocalDateTime getFirstCompletedAt(Long memberId, LocalDateTime start, LocalDateTime end) {
+        return completedTimeRepository
+                .findFirstByMemberIdAndCreatedAtBetweenOrderByCreatedAtAsc(memberId, start, end)
+                .map(CompletedTime::getCreatedAt)
+                .orElse(null);
+    }
 
+    private LocalDateTime getLastCompletedAt(Long memberId, LocalDateTime start, LocalDateTime end) {
+        return completedTimeRepository
+                .findFirstByMemberIdAndCreatedAtBetweenOrderByCreatedAtDesc(memberId, start, end)
+                .map(CompletedTime::getCreatedAt)
+                .orElse(null);
+    }
 }
