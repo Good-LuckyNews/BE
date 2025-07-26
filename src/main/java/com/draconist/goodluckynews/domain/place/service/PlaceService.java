@@ -145,10 +145,15 @@ public class PlaceService {
                 response
         ));
     }
-
-//플레이스 전체 조회 ( 페이지네이션 )
+    //플레이스 전체 조회 ( 페이지네이션 )
 
     public ResponseEntity<?> getPlaceById(Long placeId) {
+        //  0. placeId 유효성 검사
+        if (placeId == null || placeId <= 0) {
+            throw new GeneralException(ErrorStatus.INVALID_PLACE_ID);
+        }
+
+
         // 1. placeId로 Place 조회 (없으면 예외 발생)
         Place place = placeRepository.findById(placeId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.PLACE_NOT_FOUND));
@@ -172,6 +177,11 @@ public class PlaceService {
 
 
     public ResponseEntity<?> updatePlace(Long placeId, MultipartFile image, PlaceDTO placeDTO, String email) throws IOException {
+        // 0. placeId 유효성 검사
+        if (placeId == null || placeId <= 0) {
+            throw new GeneralException(ErrorStatus.INVALID_PLACE_ID);
+        }
+
         // 1. 이메일로 회원 정보 찾기
         Member member = memberRepository.findMemberByEmail(email)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
@@ -220,6 +230,11 @@ public class PlaceService {
 //플레이스 수정
 
     public ResponseEntity<?> toggleBookmark(Long placeId, String email) {
+        // 0. 유효성 검사
+        if (placeId == null || placeId <= 0) {
+            throw new GeneralException(ErrorStatus.INVALID_PLACE_ID);
+        }
+
         // 1. 회원 찾기
         Member member = memberRepository.findMemberByEmail(email)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
@@ -254,6 +269,12 @@ public class PlaceService {
 //플레이스 북마크
 
     public ResponseEntity<?> getMyPlaces(String email, int page, int size) {
+
+        //0. 유효성 검사
+        if (page < 0 || size <= 0) {
+            throw new GeneralException(ErrorStatus._PAGE_INVALID_REQUEST);
+        }
+
         // 1. 사용자 정보 조회
         Member member = memberRepository.findMemberByEmail(email)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
