@@ -10,6 +10,7 @@ public enum SuccessStatus implements BaseCode {
 	_OK(HttpStatus.OK, "COMMON200", "성공입니다."),
 
 	// 플레이스 관련
+
 	_PLACE_CREATED(HttpStatus.CREATED, "COMMON201", "플레이스가 성공적으로 생성되었습니다."),
 	_PLACE_DELETED(HttpStatus.OK, "COMMON202", "플레이스가 성공적으로 삭제되었습니다."),
 
