@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PlaceDTO {
-    private Long placeId;   // 🔹 placeId 추가
+    private Long placeId;   // placeId 추가
     private String placeName;
     private String placeDetails;
     private String placeImg;

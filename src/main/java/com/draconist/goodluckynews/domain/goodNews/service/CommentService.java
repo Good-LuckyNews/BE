@@ -155,6 +155,10 @@ public class CommentService {
                 .map(reply -> toMyCommentResultDtoWithReplies(reply, userId))
                 .collect(Collectors.toList());
 
+        //Post, Place 접근 (플레이스 이미지 가져와야함)
+        Post post = comment.getPost();
+        Place place = post !=null? post.getPlace() : null;
+
         return CommentDto.CommentResultDto.builder()
                 .commentId(comment.getId())
                 .postId(comment.getPostId())
@@ -163,6 +167,8 @@ public class CommentService {
                 .likeCount(commentLikeRepository.countByCommentId(comment.getId()))
                 .writer(mapToWriterDto(comment.getUserId())) //작성자 정보 추가
                 .replies(replyDtoList)
+                .placeImg(place != null ? place.getPlaceImg() : null) // 플레이스 이미지 추가
+                .placeName(place != null ? place.getPlaceName() : null) // 플레이스 이름 추가
                 .build();
     }
 

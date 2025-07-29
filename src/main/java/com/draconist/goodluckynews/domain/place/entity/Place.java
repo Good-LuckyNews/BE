@@ -27,7 +27,7 @@ public class Place extends BaseEntity {
     private String placeImg;
 
 
-    // ✅ 북마크 상태 저장 (true: 북마크됨, false: 북마크 안됨)
+    // 북마크 상태 저장 (true: 북마크됨, false: 북마크 안됨)
     @Column(name = "isBookmarked", nullable = false)
     private boolean isBookmarked = false;
 
@@ -37,7 +37,7 @@ public class Place extends BaseEntity {
     }
 
 
-    // ✅ 플레이스 정보 수정 메서드 추가
+    // 플레이스 정보 수정 메서드 추가
     public void updatePlace(String placeName, String placeDetails, String placeImg) {
         this.placeName = placeName;
         this.placeDetails = placeDetails;
@@ -47,7 +47,7 @@ public class Place extends BaseEntity {
     }
 
 
-    // ✅ 북마크 토글 기능 추가
+    // 북마크 토글 기능 추가
     public void toggleBookmark() {
         this.isBookmarked = !this.isBookmarked;
     }

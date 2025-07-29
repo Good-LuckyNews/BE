@@ -22,7 +22,7 @@ public class Post {
     @Column(name = "postId")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)  // 🔹 연관관계 매핑 (지연 로딩)
+    @ManyToOne(fetch = FetchType.LAZY)  // 연관관계 매핑 (지연 로딩)
     @JoinColumn(name = "placeId", insertable = false, updatable = false)  // 🔹 placeId를 외래키로 사용
     private Place place;  // 🔹 플레이스 엔티티 참조
 

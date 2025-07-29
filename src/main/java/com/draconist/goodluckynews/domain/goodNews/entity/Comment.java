@@ -39,4 +39,8 @@ public class Comment {
 
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "postId", insertable = false, updatable = false)
+    private Post post; // 연관관계 추가하기
 }
