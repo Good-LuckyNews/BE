@@ -30,7 +30,7 @@ public class GoodnewsDto {
         private Long placeId;
         private Long userId;
         private String content;
-        private String image;
+        private String image; //게시글 이미지
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
         private String placeName;
@@ -61,8 +61,9 @@ public class GoodnewsDto {
         private Long placeId;      // 게시글이 속한 장소 ID
         private Long userId;       // 게시글 작성자 ID
         private String content;    // 게시글 내용
-        private String placeName;  // 🔹 플레이스 제목 추가
+        private String placeName;  // 플레이스 제목 추가
         private String image;      // 이미지 URL (선택 사항)
+        private String placeImg;   // 장소 이미지 추가
         private LocalDateTime createdAt; // 생성 날짜
         private LocalDateTime updatedAt; // 수정 날짜
         private int likeCount;     // 좋아요 개수 추가

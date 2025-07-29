@@ -232,6 +232,7 @@ public class PostService {
                         .postId(post.getId())
                         .placeId(post.getPlaceId())
                         .placeName(post.getPlace().getPlaceName())  // 플레이스 제목 추가
+                        .placeImg(post.getPlace().getPlaceImg()) // 플레이스 이미지 추가
                         .userId(post.getUserId())
                         .content(post.getContent())
                         .image(post.getImage())
