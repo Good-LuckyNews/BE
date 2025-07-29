@@ -1,11 +1,11 @@
 package com.draconist.goodluckynews.domain.member.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class WriterInfoDto {
     private Long userId;
