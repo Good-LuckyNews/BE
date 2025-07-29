@@ -1,6 +1,7 @@
 package com.draconist.goodluckynews.domain.goodNews.dto;
 
 import com.draconist.goodluckynews.domain.goodNews.entity.Post;
+import com.draconist.goodluckynews.domain.member.dto.WriterInfoDto;
 import com.draconist.goodluckynews.domain.place.entity.Place;
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
@@ -33,8 +34,9 @@ public class GoodnewsDto {
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
         private String placeName;
+        private WriterInfoDto writer; //작성자 정보 추가
 
-        public static GoodnewsResponseDto from(Post post) {
+        public static GoodnewsResponseDto from(Post post, WriterInfoDto writer) {
             return GoodnewsResponseDto.builder()
                     .postId(post.getId())
                     .placeId(post.getPlaceId())
@@ -44,6 +46,7 @@ public class GoodnewsDto {
                     .createdAt(post.getCreatedAt())
                     .updatedAt(post.getUpdatedAt())
                     .placeName(post.getPlace() != null ? post.getPlace().getPlaceName() : null)
+                    .writer(writer) // 작성자 정보 세팅
                     .build();
         }
     }
@@ -64,6 +67,8 @@ public class GoodnewsDto {
         private LocalDateTime updatedAt; // 수정 날짜
         private int likeCount;     // 좋아요 개수 추가
         private int commentCount;  // 댓글 개수 추가
+        private WriterInfoDto writer;// 작성자 정보 필드 추가
+
     }//값 반환 dto
 
     @Builder

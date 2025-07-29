@@ -1,5 +1,6 @@
 package com.draconist.goodluckynews.domain.goodNews.dto;
 
+import com.draconist.goodluckynews.domain.member.dto.WriterInfoDto;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -24,6 +25,7 @@ public class CommentDto {
         private LocalDateTime createdAt; // 작성 날짜
         private int likeCount;   // 댓글 좋아요 개수 추가
         private List<CommentResultDto> replies;// 답글 리스트 추가
+        private WriterInfoDto writer; // 작성자 정보 추가하기
 
     }
 
