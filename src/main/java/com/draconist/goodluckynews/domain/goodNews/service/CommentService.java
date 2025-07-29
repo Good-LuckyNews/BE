@@ -9,6 +9,7 @@ import com.draconist.goodluckynews.domain.goodNews.repository.CommentLikeReposit
 import com.draconist.goodluckynews.domain.goodNews.repository.CommentRepository;
 import com.draconist.goodluckynews.domain.goodNews.repository.PostLikeRepository;
 import com.draconist.goodluckynews.domain.goodNews.repository.PostRepository;
+import com.draconist.goodluckynews.domain.member.dto.WriterInfoDto;
 import com.draconist.goodluckynews.domain.member.entity.Member;
 import com.draconist.goodluckynews.domain.member.repository.MemberRepository;
 import com.draconist.goodluckynews.domain.place.entity.Place;
@@ -37,6 +38,32 @@ public class CommentService {
     private final PlaceRepository placeRepository;
     private final MemberRepository memberRepository;
 
+
+    private WriterInfoDto mapToWriterDto(Long userId) {
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return WriterInfoDto.builder()
+                .userId(member.getId())
+                .name(member.getName())
+                .profileImage(member.getProfileImage())
+                .build();
+    } //작성자 매핑 함수 추가함
+
+
+    private CommentDto.CommentResultDto toSingleCommentDto(Comment comment) {
+        return CommentDto.CommentResultDto.builder()
+                .commentId(comment.getId())
+                .postId(comment.getPostId())
+                .content(comment.getContent())
+                .createdAt(comment.getCreatedAt())
+                .likeCount(commentLikeRepository.countByCommentId(comment.getId()))
+                .writer(mapToWriterDto(comment.getUserId()))
+                .replies(Collections.emptyList()) // 생성 시점에는 대댓글 없음
+                .build();
+    }//대댓글 없을 때
+
+
     // 댓글 생성
     public ResponseEntity<?> createComment(Long postId, CommentDto.CommentCreateDto commentDto, String email) {
         // 1. 회원 조회
@@ -59,8 +86,9 @@ public class CommentService {
         return ResponseEntity.status(SuccessStatus.COMMENT_CREATED.getHttpStatus())
                 .body(ApiResponse.onSuccess(
                         SuccessStatus.COMMENT_CREATED.getMessage(),
-                        comment
+                        toSingleCommentDto(comment)
                 ));
+
     }
 
     // 특정 게시글의 댓글 목록
@@ -94,6 +122,7 @@ public class CommentService {
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
                 .likeCount(commentLikeRepository.countByCommentId(comment.getId()))
+                .writer(mapToWriterDto(comment.getUserId()))//작성자 정보 추가
                 .replies(replyDtoList)
                 .build();
     }
@@ -132,6 +161,7 @@ public class CommentService {
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
                 .likeCount(commentLikeRepository.countByCommentId(comment.getId()))
+                .writer(mapToWriterDto(comment.getUserId())) //작성자 정보 추가
                 .replies(replyDtoList)
                 .build();
     }
@@ -256,10 +286,10 @@ public class CommentService {
         return ResponseEntity.status(SuccessStatus.COMMENT_REPLIES_CREATED.getHttpStatus())
                 .body(ApiResponse.onSuccess(
                         SuccessStatus.COMMENT_REPLIES_CREATED.getMessage(),
-                        replyComment
+                        toSingleCommentDto(replyComment)
                 ));
-    }
 
+    }
 
 
 }

@@ -6,6 +6,7 @@ import com.draconist.goodluckynews.domain.goodNews.entity.PostLike;
 import com.draconist.goodluckynews.domain.goodNews.repository.CommentRepository;
 import com.draconist.goodluckynews.domain.goodNews.repository.PostRepository;
 import com.draconist.goodluckynews.domain.goodNews.repository.PostLikeRepository;
+import com.draconist.goodluckynews.domain.member.dto.WriterInfoDto;
 import com.draconist.goodluckynews.domain.member.entity.Member;
 import com.draconist.goodluckynews.domain.member.repository.MemberRepository;
 import com.draconist.goodluckynews.domain.place.entity.Place;
@@ -38,6 +39,20 @@ public class PostService {
     private final AwsS3Service awsS3Service;
     private final PlaceRepository placeRepository;
 
+
+
+    //공통 작성자 DTO 생성 메서드
+    private WriterInfoDto mapToWriterDto(Long userId) {
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+        return WriterInfoDto.builder()
+                .userId(member.getId())
+                .name(member.getName())
+                .profileImage(member.getProfileImage())
+                .build();
+    }
+
+
     public ResponseEntity<?> createPost(GoodnewsDto.GoodnewsCreateDto goodnewsCreateDTO, MultipartFile image, String email) {
         try {
             Member user = memberRepository.findMemberByEmail(email)
@@ -63,7 +78,7 @@ public class PostService {
             postRepository.save(post);
 
             // DTO 변환 및 반환
-            GoodnewsDto.GoodnewsResponseDto response = GoodnewsDto.GoodnewsResponseDto.from(post);
+            GoodnewsDto.GoodnewsResponseDto response = GoodnewsDto.GoodnewsResponseDto.from(post, mapToWriterDto(user.getId()));
 
             return ResponseEntity.status(SuccessStatus.POST_CREATED.getHttpStatus())
                     .body(ApiResponse.onSuccess(SuccessStatus.POST_CREATED.getMessage(), response));
@@ -90,6 +105,7 @@ public class PostService {
                 .updatedAt(post.getUpdatedAt())
                 .likeCount(postLikeRepository.countByPostId(post.getId()))
                 .commentCount(commentRepository.countByPostId(post.getId()))
+                .writer(mapToWriterDto(post.getUserId())) //작성자 추가
                 .build();
 
         // 3. ApiResponse로 감싸서 반환 (POST_DETAIL_SUCCESS 사용)
@@ -121,6 +137,7 @@ public class PostService {
                         .updatedAt(post.getUpdatedAt())
                         .likeCount(postLikeRepository.countByPostId(post.getId()))
                         .commentCount(commentRepository.countByPostId(post.getId()))
+                        .writer(mapToWriterDto(post.getUserId()))//작성자 추가
                         .build())
                 .collect(Collectors.toList());
 
@@ -192,6 +209,7 @@ public class PostService {
                         .updatedAt(post.getUpdatedAt())
                         .likeCount(postLikeRepository.countByPostId(post.getId()))
                         .commentCount(commentRepository.countByPostId(post.getId()))
+                        .writer(mapToWriterDto(post.getUserId()))
                         .build())
                 .collect(Collectors.toList());
 
@@ -213,7 +231,7 @@ public class PostService {
                 .map(post -> GoodnewsDto.PostDto.builder()
                         .postId(post.getId())
                         .placeId(post.getPlaceId())
-                        .placeName(post.getPlace().getPlaceName())  // 🔹 플레이스 제목 추가
+                        .placeName(post.getPlace().getPlaceName())  // 플레이스 제목 추가
                         .userId(post.getUserId())
                         .content(post.getContent())
                         .image(post.getImage())
@@ -221,6 +239,7 @@ public class PostService {
                         .updatedAt(post.getUpdatedAt())
                         .likeCount(postLikeRepository.countByPostId(post.getId()))
                         .commentCount(commentRepository.countByPostId(post.getId()))
+                        .writer(mapToWriterDto(post.getUserId()))//작성자 추가
                         .build())
                 .collect(Collectors.toList());
 
@@ -279,6 +298,7 @@ public class PostService {
                         .updatedAt(post.getUpdatedAt())
                         .likeCount(postLikeRepository.countByPostId(post.getId()))
                         .commentCount(commentRepository.countByPostId(post.getId()))
+                        .writer(mapToWriterDto(post.getUserId()))
                         .build())
                 .collect(Collectors.toList());
 
