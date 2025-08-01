@@ -40,7 +40,7 @@ public class CompletedTimeConverter {
     ) {
         int[] padded = new int[7];
         for (int i = 0; i < 7; i++) {
-            padded[i] = (values != null && i < values.length) ? values[i] : 0;
+            padded[i] = (values != null && i < values.length) ? values[i] : null;
         }
         return SevenCompletedGraphDto.builder()
                 .first(padded[0])
