@@ -94,7 +94,7 @@ import java.util.List;
         List<CompletedTime> completedTimes = completedTimeRepository.findCompletedTimesThisWeek(userId,startOfWeek, endOfWeek);
 
         // 각 날마다 완료된 기사의 개수를 셈
-        int[] completedArticlesPerDay = new int[7]; // 0 = 월, 1 = 화, ..., 6 = 일
+        Integer[] completedArticlesPerDay = new Integer[7]; // 0 = 월, 1 = 화, ..., 6 = 일
 
         for (CompletedTime completedTime : completedTimes) {
             LocalDateTime completedAt = completedTime.getCompletedAt();
@@ -129,7 +129,7 @@ import java.util.List;
         List<CompletedTime> completedTimes = completedTimeRepository.findCompletedTimesLastMonth(userId,firstDayOfLastMonth, lastDayOfLastMonth);
 
         // 각 주에 완료된 기사 개수를 셈
-        int[] completedArticlesPerWeek = new int[5]; // 5개의 주로 나누기 (한 달을 4~5주로 나눠야 하므로 5개로 준비)
+        Integer[] completedArticlesPerWeek = new Integer[5];// 5개의 주로 나누기 (한 달을 4~5주로 나눠야 하므로 5개로 준비)
 
         // 시작일과 끝일을 기준으로 주차 계산
         for (CompletedTime completedTime : completedTimes) {
@@ -175,7 +175,7 @@ import java.util.List;
         List<CompletedTime> completedTimes = completedTimeRepository.findCompletedTimesLastSixMonths(userId,startOfSixMonthsAgo, endOfToday);
 
         // 6개월 동안 각 달마다 완료된 기사 수를 셈
-        int[] completedArticlesPerMonth = new int[6]; // 이번 6개월 동안의 완료된 기사 개수를 담을 배열
+        Integer[] completedArticlesPerMonth = new Integer[6];// 이번 6개월 동안의 완료된 기사 개수를 담을 배열
 
         // 6개월 동안의 기사를 각 달별로 세기
         for (CompletedTime completedTime : completedTimes) {
@@ -216,7 +216,7 @@ import java.util.List;
 
         // completedTimes가 비어있으면 바로 0값으로 반환
         if (completedTimes.isEmpty()) {
-            SevenCompletedGraphDto emptyResponseDto = completedTimeConverter.toSevenCompletedGraphDto(new int[0]);
+            SevenCompletedGraphDto emptyResponseDto = completedTimeConverter.toSevenCompletedGraphDto(new Integer[0]);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(ApiResponse.onSuccess(emptyResponseDto));
         }
@@ -239,7 +239,7 @@ import java.util.List;
         }
 
         // 6등분된 각 구간에 대해 완료된 기사 수를 셈
-        int[] completedArticlesPerPeriod = new int[6];
+        Integer[] completedArticlesPerPeriod = new Integer[6];
 
         for (CompletedTime completedTime : completedTimes) {
             long daysBetween = ChronoUnit.DAYS.between(minDate, completedTime.getCompletedAt());

@@ -34,12 +34,13 @@ public class CompletedTimeConverter {
     }
     // 배열로 받아 패딩하여 SevenCompletedGraphDto로 만들어줌
     public SevenCompletedGraphDto toSevenCompletedGraphDto(
-            int[] values,
+            Integer[] values,
             LocalDateTime firstCompletedAt,
             LocalDateTime lastCompletedAt
     ) {
-        int[] padded = new int[7];
+        Integer[] padded = new Integer[7];
         for (int i = 0; i < 7; i++) {
+            // 값이 있으면 넣고, 없으면 null
             padded[i] = (values != null && i < values.length) ? values[i] : null;
         }
         return SevenCompletedGraphDto.builder()
@@ -55,8 +56,9 @@ public class CompletedTimeConverter {
                 .build();
     }
 
+
     // (기존: 날짜 정보 필요 없을 땐 null로)
-    public SevenCompletedGraphDto toSevenCompletedGraphDto(int[] values) {
+    public SevenCompletedGraphDto toSevenCompletedGraphDto(Integer[] values) {
         return toSevenCompletedGraphDto(values, null, null);
     }
 }
