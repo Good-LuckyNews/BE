@@ -249,25 +249,20 @@ import java.util.List;
             periodDuration = 1; // 6일 미만일 경우 1일 기준으로 간주
         }
 
-        // 6등분된 각 구간에 대해 완료된 기사 수를 셈
-        Integer[] completedArticlesPerPeriod = new Integer[6];
-        Arrays.fill(completedArticlesPerPeriod, 0);
+        // 7등분된 각 구간에 대해 완료된 기사 수를 셈
+        Integer[] completedArticlesPerPeriod = new Integer[7];
+        for (int i = 0; i < 7; i++) {
+            completedArticlesPerPeriod[i] = 0; // null 방지 명시적 초기화
+        }
+
         for (CompletedTime completedTime : completedTimes) {
             long daysBetween = ChronoUnit.DAYS.between(minDate, completedTime.getCompletedAt());
 
-            // 해당 기사가 속하는 기간을 계산
             int periodIndex = (int) (daysBetween / periodDuration);
-
-            // 만약 periodIndex가 6보다 크거나 같으면 마지막 기간에 포함시킴
-            if (periodIndex >= 6) {
-                periodIndex = 5;
+            if (periodIndex >= 7) {
+                periodIndex = 6; // 인덱스 범위 최대 6 (0~6)
             }
-
-            if (completedArticlesPerPeriod[periodIndex] == null) {
-                completedArticlesPerPeriod[periodIndex] = completedTime.getDegree();
-            } else {
-                completedArticlesPerPeriod[periodIndex] += completedTime.getDegree();
-            }
+            completedArticlesPerPeriod[periodIndex] += completedTime.getDegree();
         }
 
         //가장과거
