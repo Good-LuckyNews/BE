@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -95,7 +96,7 @@ import java.util.List;
 
         // 각 날마다 완료된 기사의 개수를 셈
         Integer[] completedArticlesPerDay = new Integer[7]; // 0 = 월, 1 = 화, ..., 6 = 일
-
+        Arrays.fill(completedArticlesPerDay, 0);
         for (CompletedTime completedTime : completedTimes) {
             LocalDateTime completedAt = completedTime.getCompletedAt();
             if (completedAt.isAfter(startOfWeek) && completedAt.isBefore(endOfWeek)) {
@@ -135,7 +136,7 @@ import java.util.List;
 
         // 각 주에 완료된 기사 개수를 셈
         Integer[] completedArticlesPerWeek = new Integer[5];// 5개의 주로 나누기 (한 달을 4~5주로 나눠야 하므로 5개로 준비)
-
+        Arrays.fill(completedArticlesPerWeek, 0);
         // 시작일과 끝일을 기준으로 주차 계산
         for (CompletedTime completedTime : completedTimes) {
             LocalDateTime completedDate = completedTime.getCompletedAt();
@@ -184,7 +185,7 @@ import java.util.List;
 
         // 6개월 동안 각 달마다 완료된 기사 수를 셈
         Integer[] completedArticlesPerMonth = new Integer[6];// 이번 6개월 동안의 완료된 기사 개수를 담을 배열
-
+        Arrays.fill(completedArticlesPerMonth, 0);
         // 6개월 동안의 기사를 각 달별로 세기
         for (CompletedTime completedTime : completedTimes) {
             LocalDateTime completedAt = completedTime.getCompletedAt();
@@ -250,7 +251,7 @@ import java.util.List;
 
         // 6등분된 각 구간에 대해 완료된 기사 수를 셈
         Integer[] completedArticlesPerPeriod = new Integer[6];
-
+        Arrays.fill(completedArticlesPerPeriod, 0);
         for (CompletedTime completedTime : completedTimes) {
             long daysBetween = ChronoUnit.DAYS.between(minDate, completedTime.getCompletedAt());
 
