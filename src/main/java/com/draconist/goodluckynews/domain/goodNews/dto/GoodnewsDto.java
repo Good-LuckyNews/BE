@@ -34,6 +34,7 @@ public class GoodnewsDto {
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
         private String placeName;
+
         private WriterInfoDto writer; //작성자 정보 추가
 
         public static GoodnewsResponseDto from(Post post, WriterInfoDto writer) {
@@ -69,6 +70,7 @@ public class GoodnewsDto {
         private int likeCount;     // 좋아요 개수 추가
         private int commentCount;  // 댓글 개수 추가
         private WriterInfoDto writer;// 작성자 정보 필드 추가
+        private boolean liked; // 좋아요 여부
 
     }//값 반환 dto
 

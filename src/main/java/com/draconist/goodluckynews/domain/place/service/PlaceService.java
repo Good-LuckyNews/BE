@@ -147,27 +147,35 @@ public class PlaceService {
     }
     //플레이스 전체 조회 ( 페이지네이션 )
 
-    public ResponseEntity<?> getPlaceById(Long placeId) {
+    public ResponseEntity<?> getPlaceById(Long placeId, String email) {
         //  0. placeId 유효성 검사
         if (placeId == null || placeId <= 0) {
             throw new GeneralException(ErrorStatus.INVALID_PLACE_ID);
         }
 
+        // 1. 회원 조회
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         // 1. placeId로 Place 조회 (없으면 예외 발생)
         Place place = placeRepository.findById(placeId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.PLACE_NOT_FOUND));
 
-        // 2. DTO로 변환
+        // 2. 좋아요 수 및 여부 확인
+        int likeCount = placeLikeRepository.countByPlaceId(place.getId());
+        boolean isBookmarked = placeLikeRepository.existsByPlaceIdAndUserId(place.getId(), member.getId());
+
+        // 3. DTO로 변환
         PlaceDTO placeDTO = PlaceDTO.builder()
-                .placeId(place.getId())  // 🔹 placeId 추가
+                .placeId(place.getId())  // placeId 추가
                 .placeName(place.getPlaceName())
                 .placeDetails(place.getPlaceDetails())
                 .placeImg(place.getPlaceImg())
+                .likeCount(likeCount)
+                .isBookmark(isBookmarked)
                 .build();
 
-
-        // 3. 성공 응답 반환
+        // 4. 성공 응답 반환
         return ResponseEntity.ok(ApiResponse.onSuccess(
                 SuccessStatus._PLACE_DETAIL_SUCCESS.getMessage(),
                 placeDTO

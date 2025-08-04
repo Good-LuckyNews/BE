@@ -43,8 +43,11 @@ public class PlaceController {
 
 
     @GetMapping("/{placeId}")
-    public ResponseEntity<?> getPlaceById(@PathVariable Long placeId) {
-        return placeService.getPlaceById(placeId);
+    public ResponseEntity<?> getPlaceDetail(
+            @PathVariable Long id,
+            @AuthenticationPrincipal String email // JWT 인증 객체 등으로부터 유저 식별
+    ) {
+        return placeService.getPlaceById(id, email);
     }//특정 플레이스 상세 조회
 
     @PatchMapping("/{placeId}")

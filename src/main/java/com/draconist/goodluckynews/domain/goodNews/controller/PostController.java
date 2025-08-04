@@ -28,17 +28,23 @@ public class PostController {
     }//희소식 생성
 
     @GetMapping("/{postId}")
-    public ResponseEntity<?> getPostById(@PathVariable Long postId) {
-        return postService.getPostById(postId);
-    }//희소식 상세 조회
+    public ResponseEntity<?> getPostById(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal String email
+    ) {
+        return postService.getPostById(postId, email);
+    }
+//희소식 상세 조회
 
     @GetMapping
     public ResponseEntity<?> getAllPosts(
-            @RequestParam(defaultValue = "0") int page,  // 기본값 0
-            @RequestParam(defaultValue = "10") int size // 기본값 10
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal String email // 로그인 사용자 email 주입
     ) {
-        return postService.getAllPosts(page, size);
-    }//희소식 전체 조회 (페이지네이션)
+        return postService.getAllPosts(page, size, email);
+    }
+//희소식 전체 조회 (페이지네이션)
 
     @PostMapping("/{postId}/like")
     public ResponseEntity<?> togglePostLike(

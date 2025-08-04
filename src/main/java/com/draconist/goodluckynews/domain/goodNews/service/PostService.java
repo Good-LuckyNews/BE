@@ -88,10 +88,15 @@ public class PostService {
         }
     }//게시글 생성
 
-    public ResponseEntity<?> getPostById(Long postId) {
+    public ResponseEntity<?> getPostById(Long postId, String email) {
+        Member member = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
         // 1. 게시글 조회 (없으면 예외 발생)
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException(ErrorStatus.POST_NOT_FOUND.getMessage()));
+
+        boolean liked = postLikeRepository.findByUserIdAndPostId(member.getId(), postId).isPresent();
 
         // 2. 조회된 게시글을 DTO로 변환
         GoodnewsDto.PostDto postDto = GoodnewsDto.PostDto.builder()
@@ -106,6 +111,7 @@ public class PostService {
                 .likeCount(postLikeRepository.countByPostId(post.getId()))
                 .commentCount(commentRepository.countByPostId(post.getId()))
                 .writer(mapToWriterDto(post.getUserId())) //작성자 추가
+                .liked(liked)
                 .build();
 
         // 3. ApiResponse로 감싸서 반환 (POST_DETAIL_SUCCESS 사용)
@@ -117,7 +123,11 @@ public class PostService {
     }
 
 
-    public ResponseEntity<?> getAllPosts(int page, int size) {
+    public ResponseEntity<?> getAllPosts(int page, int size, String email) {
+        // 1. 사용자 정보 조회
+        Member user = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
         // 1. 페이지네이션 객체 생성
         Pageable pageable = PageRequest.of(page, size);
 
@@ -137,6 +147,7 @@ public class PostService {
                         .updatedAt(post.getUpdatedAt())
                         .likeCount(postLikeRepository.countByPostId(post.getId()))
                         .commentCount(commentRepository.countByPostId(post.getId()))
+                        .liked(postLikeRepository.findByUserIdAndPostId(user.getId(), post.getId()).isPresent())
                         .writer(mapToWriterDto(post.getUserId()))//작성자 추가
                         .build())
                 .collect(Collectors.toList());
