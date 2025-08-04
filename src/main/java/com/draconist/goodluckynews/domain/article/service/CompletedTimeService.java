@@ -191,9 +191,12 @@ import java.util.List;
 
             // 6개월 전부터 오늘까지의 기간 내에서 각 달에 해당하는 기사 세기
             int monthDiff = now.getMonthValue() - completedAt.getMonthValue();
-            if (monthDiff < 0) {
-                monthDiff += 12;  // 월 차이가 음수일 경우, 12개월을 더해서 양수로 계산
+            if (completedArticlesPerMonth[monthDiff] == null) {
+                completedArticlesPerMonth[monthDiff] = completedTime.getDegree();
+            } else {
+                completedArticlesPerMonth[monthDiff] += completedTime.getDegree();
             }
+
 
             if (completedArticlesPerMonth[monthDiff] == null) {
                 completedArticlesPerMonth[monthDiff] = completedTime.getDegree();
