@@ -100,8 +100,13 @@ import java.util.List;
             LocalDateTime completedAt = completedTime.getCompletedAt();
             if (completedAt.isAfter(startOfWeek) && completedAt.isBefore(endOfWeek)) {
                 int dayOfWeek = completedAt.getDayOfWeek().getValue() - 1; // 월요일: 0, 일요일: 6
-                completedArticlesPerDay[dayOfWeek] += completedTime.getDegree();
+                if (completedArticlesPerDay[dayOfWeek] == null) {
+                    completedArticlesPerDay[dayOfWeek] = completedTime.getDegree();
+                } else {
+                    completedArticlesPerDay[dayOfWeek] += completedTime.getDegree();
+                }
             }
+
         }
         LocalDateTime firstCompletedAt = getFirstCompletedAt(userId, startOfWeek, endOfWeek);
         LocalDateTime lastCompletedAt = getLastCompletedAt(userId, startOfWeek, endOfWeek);
@@ -137,9 +142,12 @@ import java.util.List;
 
             // 첫날부터 마지막 날까지 주 단위로 나누기
             int weekOfMonth = getWeekOfMonth(completedDate, firstDayOfLastMonth);
-            if (weekOfMonth >= 0 && weekOfMonth < completedArticlesPerWeek.length) {
-                completedArticlesPerWeek[weekOfMonth] +=completedTime.getDegree();;
+            if (completedArticlesPerWeek[weekOfMonth] == null) {
+                completedArticlesPerWeek[weekOfMonth] = completedTime.getDegree();
+            } else {
+                completedArticlesPerWeek[weekOfMonth] += completedTime.getDegree();
             }
+
         }
 
         // SevenCompletedGraphDto에 완료된 기사 개수 세팅
@@ -187,9 +195,12 @@ import java.util.List;
                 monthDiff += 12;  // 월 차이가 음수일 경우, 12개월을 더해서 양수로 계산
             }
 
-            if (monthDiff < 6) {
+            if (completedArticlesPerMonth[monthDiff] == null) {
+                completedArticlesPerMonth[monthDiff] = completedTime.getDegree();
+            } else {
                 completedArticlesPerMonth[monthDiff] += completedTime.getDegree();
             }
+
         }
 
         // SevenCompletedGraphDto에 완료된 기사 개수 세팅
@@ -252,7 +263,11 @@ import java.util.List;
                 periodIndex = 5;
             }
 
-            completedArticlesPerPeriod[periodIndex] += completedTime.getDegree();
+            if (completedArticlesPerPeriod[periodIndex] == null) {
+                completedArticlesPerPeriod[periodIndex] = completedTime.getDegree();
+            } else {
+                completedArticlesPerPeriod[periodIndex] += completedTime.getDegree();
+            }
         }
 
         //가장과거
