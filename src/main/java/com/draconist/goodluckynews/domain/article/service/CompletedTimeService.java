@@ -215,7 +215,7 @@ import java.util.List;
     }
 
 
-//전체기간 기준 6등분
+//전체기간 기준 6등분at
 @Transactional
 public ResponseEntity<?> getCompletedTimesAll(Long userId) {
     Member member = memberRepository.findById(userId)
@@ -279,6 +279,18 @@ public ResponseEntity<?> getCompletedTimesAll(Long userId) {
     return ResponseEntity.status(HttpStatus.OK)
             .body(ApiResponse.onSuccess(responseDto));
 }
+
+    private ArticleLongContentDto buildArticleLongContentDto(ArticleEntity article, Long userId) {
+        Heart heart = heartRepository.findByMemberIdAndArticleId(userId, article.getId())
+                .orElse(null);
+        CompletedDegreeDto completedDegreeDto = completedTimeRepository
+                .findByMemberIdAndArticleId(userId, article.getId())
+                .map(completedTime -> new CompletedDegreeDto(completedTime.getDegree(), completedTime.getCompletedAt()))
+                .orElse(null);
+
+        // 여기서 converter 사용
+        return completedTimeConverter.toArticleLongContentDto(article, heart, completedDegreeDto);
+    }
 
     public FirstCreatedAndTodayDto getFirstCreatedAndToday(Long memberId) {
         Member member = memberRepository.findById(memberId)
