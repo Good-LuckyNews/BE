@@ -216,85 +216,69 @@ import java.util.List;
 
 
 //전체기간 기준 6등분
-    @Transactional
-    public ResponseEntity<?> getCompletedTimesAll(Long userId) {
-        // jwt 확인 (간략화)
-        Member member = memberRepository.findById(userId)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+@Transactional
+public ResponseEntity<?> getCompletedTimesAll(Long userId) {
+    Member member = memberRepository.findById(userId)
+            .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
-        // 전체 기간 동안 완료된 기사 조회
-        List<CompletedTime> completedTimes = completedTimeRepository.findCompletedTimesAllTime(userId);
+    // 전체 기간 동안 완료된 기사 조회
+    List<CompletedTime> completedTimes = completedTimeRepository.findCompletedTimesAllTime(userId);
 
-        // completedTimes가 비어있으면 바로 0값으로 반환
-        if (completedTimes.isEmpty()) {
-            SevenCompletedGraphDto emptyResponseDto = completedTimeConverter.toSevenCompletedGraphDto(new Integer[0]);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(ApiResponse.onSuccess(emptyResponseDto));
-        }
+    // 1. 기본 배열 초기화 (6등분)
+    Integer[] completedArticlesPerPeriod = new Integer[6];
+    for (int i = 0; i < 6; i++) {
+        completedArticlesPerPeriod[i] = 0;
+    }
 
-
-        // 전체 기간동안 완료한 기사를 최신 순으로 정렬
-        completedTimes.sort((t1, t2) -> t2.getCompletedAt().compareTo(t1.getCompletedAt())); // 최신 기사가 first에 오도록 정렬
-
-        // 가장 오래된 날짜와 최신 날짜 구하기
-        LocalDateTime minDate = completedTimes.get(completedTimes.size() - 1).getCompletedAt(); // 가장 오래된 날짜
-        LocalDateTime maxDate = completedTimes.get(0).getCompletedAt(); // 가장 최신 날짜
-
-        // 기간 범위를 6등분하기 위한 interval 계산
-        long totalDuration = ChronoUnit.DAYS.between(minDate, maxDate);
-
-        // 기간이 6일 미만일 경우 periodDuration이 0이 될 수 있기 때문에 최소 1로 설정
-        long periodDuration = totalDuration / 6;
-        if (periodDuration == 0) {
-            periodDuration = 1; // 6일 미만일 경우 1일 기준으로 간주
-        }
-
-        // 7등분된 각 구간에 대해 완료된 기사 수를 셈
-        Integer[] completedArticlesPerPeriod = new Integer[7];
-        for (int i = 0; i < 7; i++) {
-            completedArticlesPerPeriod[i] = 0; // null 방지 명시적 초기화
-        }
-
-        for (CompletedTime completedTime : completedTimes) {
-            long daysBetween = ChronoUnit.DAYS.between(minDate, completedTime.getCompletedAt());
-
-            int periodIndex = (int) (daysBetween / periodDuration);
-            if (periodIndex >= 7) {
-                periodIndex = 6; // 인덱스 범위 최대 6 (0~6)
-            }
-            completedArticlesPerPeriod[periodIndex] += completedTime.getDegree();
-        }
-
-        //가장과거
-        CompletedTime first =
-                completedTimeRepository.findFirstByMemberOrderByCreatedAtAsc(member)
-                        .orElseThrow(() -> new GeneralException(ErrorStatus._COMPLETED_NOTFOUND));
-
-        // 가장 마지막(가장 최근)
-        CompletedTime last = completedTimeRepository.findFirstByMemberOrderByCreatedAtDesc(member)
-                .orElseThrow(() -> new GeneralException(ErrorStatus._COMPLETED_NOTFOUND));
-
-        LocalDateTime firstCreatedAt = first.getCreatedAt();
-        LocalDateTime lastCreatedAt = last.getCreatedAt();
-
-        SevenCompletedGraphDto responseDto = completedTimeConverter.toSevenCompletedGraphDto(
-                completedArticlesPerPeriod, firstCreatedAt, lastCreatedAt
-        );
+    // 2. 완료된 기사가 없으면 그대로 반환
+    if (completedTimes.isEmpty()) {
+        // first~sixth는 이미 0, seventh는 null로 (converter에서 세팅)
+        SevenCompletedGraphDto emptyResponseDto =
+                completedTimeConverter.toSevenCompletedGraphDto(completedArticlesPerPeriod, null, null);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.onSuccess(responseDto));
+                .body(ApiResponse.onSuccess(emptyResponseDto));
     }
 
-    private ArticleLongContentDto buildArticleLongContentDto(ArticleEntity article, Long userId) {
-        Heart heart = heartRepository.findByMemberIdAndArticleId(userId, article.getId())
-                .orElse(null);
-        CompletedDegreeDto completedDegreeDto = completedTimeRepository
-                .findByMemberIdAndArticleId(userId, article.getId())
-                .map(completedTime -> new CompletedDegreeDto(completedTime.getDegree(), completedTime.getCompletedAt()))
-                .orElse(null);
+    // 3. 최신순 정렬
+    completedTimes.sort((t1, t2) -> t2.getCompletedAt().compareTo(t1.getCompletedAt()));
 
-        // 여기서 converter 사용
-        return completedTimeConverter.toArticleLongContentDto(article, heart, completedDegreeDto);
+    // 4. 날짜 범위
+    LocalDateTime minDate = completedTimes.get(completedTimes.size() - 1).getCompletedAt();
+    LocalDateTime maxDate = completedTimes.get(0).getCompletedAt();
+
+    // 5. 6등분 기간 계산
+    long totalDuration = ChronoUnit.DAYS.between(minDate, maxDate);
+    long periodDuration = totalDuration / 6;
+    if (periodDuration == 0) {
+        periodDuration = 1;
     }
+
+    // 7. 카운팅
+    for (CompletedTime completedTime : completedTimes) {
+        long daysBetween = ChronoUnit.DAYS.between(minDate, completedTime.getCompletedAt());
+        int periodIndex = (int) (daysBetween / periodDuration);
+        if (periodIndex >= 6) { // 최대 인덱스 5
+            periodIndex = 5;
+        }
+        completedArticlesPerPeriod[periodIndex] += completedTime.getDegree();
+    }
+
+    // 최초 및 최종 완료 날짜
+    CompletedTime first = completedTimeRepository.findFirstByMemberOrderByCreatedAtAsc(member)
+            .orElseThrow(() -> new GeneralException(ErrorStatus._COMPLETED_NOTFOUND));
+
+    CompletedTime last = completedTimeRepository.findFirstByMemberOrderByCreatedAtDesc(member)
+            .orElseThrow(() -> new GeneralException(ErrorStatus._COMPLETED_NOTFOUND));
+
+    LocalDateTime firstCreatedAt = first.getCreatedAt();
+    LocalDateTime lastCreatedAt = last.getCreatedAt();
+
+    SevenCompletedGraphDto responseDto =
+            completedTimeConverter.toSevenCompletedGraphDto(completedArticlesPerPeriod, firstCreatedAt, lastCreatedAt);
+
+    return ResponseEntity.status(HttpStatus.OK)
+            .body(ApiResponse.onSuccess(responseDto));
+}
 
     public FirstCreatedAndTodayDto getFirstCreatedAndToday(Long memberId) {
         Member member = memberRepository.findById(memberId)
