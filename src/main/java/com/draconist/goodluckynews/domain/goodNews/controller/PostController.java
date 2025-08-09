@@ -30,8 +30,9 @@ public class PostController {
     @GetMapping("/{postId}")
     public ResponseEntity<?> getPostById(
             @PathVariable Long postId,
-            @AuthenticationPrincipal String email
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        String email = userDetails.getEmail();
         return postService.getPostById(postId, email);
     }
 //희소식 상세 조회
@@ -60,7 +61,7 @@ public class PostController {
     }//내가 쓴 페이지 조회
 
     @GetMapping("/search")
-    public ResponseEntity<?> searchPosts(@RequestParam String query) {
+    public ResponseEntity<?> searchPosts(@RequestParam String query, @AuthenticationPrincipal CustomUserDetails userDetails) {
         return postService.searchPostsByContent(query);
     }// 희소식 검색 (게시글 내용 기준으로)
 
@@ -72,7 +73,7 @@ public class PostController {
     }//희소식 삭제
 
     @GetMapping("/place/{placeId}")
-    public ResponseEntity<?> getPostsByPlace(@PathVariable Long placeId) {
+    public ResponseEntity<?> getPostsByPlace(@PathVariable Long placeId,@AuthenticationPrincipal CustomUserDetails userDetails) {
         return postService.getPostsByPlace(placeId);
     }
 }
