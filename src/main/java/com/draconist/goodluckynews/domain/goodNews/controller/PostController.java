@@ -40,8 +40,9 @@ public class PostController {
     public ResponseEntity<?> getAllPosts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal String email // 로그인 사용자 email 주입
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        String email = userDetails.getEmail();
         return postService.getAllPosts(page, size, email);
     }
 //희소식 전체 조회 (페이지네이션)
