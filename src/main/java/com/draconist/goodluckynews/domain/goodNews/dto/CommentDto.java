@@ -24,6 +24,7 @@ public class CommentDto {
         private String content;  // 댓글 내용
         private LocalDateTime createdAt; // 작성 날짜
         private int likeCount;   // 댓글 좋아요 개수
+        private boolean isLiked;
         private List<CommentResultDto> replies;// 답글 리스트
         private WriterInfoDto writer; // 작성자 정보
         private String placeImg; // 플레이스 이미지

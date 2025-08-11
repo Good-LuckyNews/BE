@@ -29,8 +29,10 @@ public class CommentController {
     public ResponseEntity<?> getCommentsByPost(
             @PathVariable Long postId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) {
-        return commentService.getCommentsByPost(postId, page, size);
+            @RequestParam(defaultValue = "5") int size,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        String userEmail = userDetails.getEmail();
+        return commentService.getCommentsByPost(postId, page, size,userEmail);
     }
 
     // 댓글 좋아요 토글

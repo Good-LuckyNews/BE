@@ -51,15 +51,18 @@ public class CommentService {
     } //작성자 매핑 함수 추가함
 
 
-    private CommentDto.CommentResultDto toSingleCommentDto(Comment comment) {
+    private CommentDto.CommentResultDto toSingleCommentDto(Comment comment, Long currentUserId) {
+        boolean isLiked = commentLikeRepository.existsByUserIdAndCommentId(currentUserId, comment.getId());
+
         return CommentDto.CommentResultDto.builder()
                 .commentId(comment.getId())
                 .postId(comment.getPostId())
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
+                .isLiked(isLiked)  // now resolved variable
                 .likeCount(commentLikeRepository.countByCommentId(comment.getId()))
                 .writer(mapToWriterDto(comment.getUserId()))
-                .replies(Collections.emptyList()) // 생성 시점에는 대댓글 없음
+                .replies(Collections.emptyList())
                 .build();
     }//대댓글 없을 때
 
@@ -82,27 +85,27 @@ public class CommentService {
                 .build();
         commentRepository.save(comment);
 
-        // 4. 성공 응답
         return ResponseEntity.status(SuccessStatus.COMMENT_CREATED.getHttpStatus())
                 .body(ApiResponse.onSuccess(
                         SuccessStatus.COMMENT_CREATED.getMessage(),
-                        toSingleCommentDto(comment)
+                        toSingleCommentDto(comment, user.getId())
                 ));
-
     }
 
     // 특정 게시글의 댓글 목록
-    public ResponseEntity<?> getCommentsByPost(Long postId, int page, int size) {
-        // 1. 게시글 존재 체크
+    public ResponseEntity<?> getCommentsByPost(Long postId, int page, int size, String email) {
+        // 현재 로그인한 유저 ID
+        Member user = memberRepository.findMemberByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+        Long currentUserId = user.getId();
+
         postRepository.findById(postId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.POST_NOT_FOUND));
 
-        // 2. 최상위 댓글만 조회 (parentComment == null)
         List<Comment> topLevelComments = commentRepository.findByPostIdAndParentCommentIsNull(postId);
 
-        // 3. 트리 구조로 replies까지 구성
         List<CommentDto.CommentResultDto> commentDtoList = topLevelComments.stream()
-                .map(this::toCommentResultDtoWithReplies)
+                .map(comment -> toCommentResultDtoWithReplies(comment, currentUserId))
                 .collect(Collectors.toList());
 
         return ResponseEntity.status(SuccessStatus.COMMENT_LIST_SUCCESS.getHttpStatus())
@@ -110,10 +113,12 @@ public class CommentService {
     }
 
     // 재귀적으로 replies를 구성
-    private CommentDto.CommentResultDto toCommentResultDtoWithReplies(Comment comment) {
+    private CommentDto.CommentResultDto toCommentResultDtoWithReplies(Comment comment, Long currentUserId) {
+        boolean isLiked = commentLikeRepository.existsByUserIdAndCommentId(currentUserId, comment.getId());
+
         List<Comment> replies = commentRepository.findByParentCommentId(comment.getId());
         List<CommentDto.CommentResultDto> replyDtoList = replies.stream()
-                .map(this::toCommentResultDtoWithReplies)
+                .map(reply -> toCommentResultDtoWithReplies(reply, currentUserId))
                 .collect(Collectors.toList());
 
         return CommentDto.CommentResultDto.builder()
@@ -122,7 +127,8 @@ public class CommentService {
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
                 .likeCount(commentLikeRepository.countByCommentId(comment.getId()))
-                .writer(mapToWriterDto(comment.getUserId()))//작성자 정보 추가
+                .isLiked(isLiked)
+                .writer(mapToWriterDto(comment.getUserId()))
                 .replies(replyDtoList)
                 .build();
     }
@@ -149,6 +155,7 @@ public class CommentService {
 
     // 재귀적으로 replies를 구성 (내가 쓴 대댓글만)
     private CommentDto.CommentResultDto toMyCommentResultDtoWithReplies(Comment comment, Long userId) {
+        boolean isLiked = commentLikeRepository.existsByUserIdAndCommentId(userId, comment.getId());
         List<Comment> replies = commentRepository.findByUserIdAndParentCommentId(userId, comment.getId());
         List<CommentDto.CommentResultDto> replyDtoList = replies.stream()
                 .map(reply -> toMyCommentResultDtoWithReplies(reply, userId))
@@ -161,6 +168,7 @@ public class CommentService {
         return CommentDto.CommentResultDto.builder()
                 .commentId(comment.getId())
                 .postId(comment.getPostId())
+                .isLiked(isLiked)
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
                 .likeCount(commentLikeRepository.countByCommentId(comment.getId()))
@@ -291,7 +299,7 @@ public class CommentService {
         return ResponseEntity.status(SuccessStatus.COMMENT_REPLIES_CREATED.getHttpStatus())
                 .body(ApiResponse.onSuccess(
                         SuccessStatus.COMMENT_REPLIES_CREATED.getMessage(),
-                        toSingleCommentDto(replyComment)
+                        toSingleCommentDto(replyComment, user.getId())
                 ));
 
     }
