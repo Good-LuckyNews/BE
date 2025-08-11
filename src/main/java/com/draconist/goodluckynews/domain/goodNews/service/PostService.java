@@ -147,7 +147,7 @@ public class PostService {
                         .updatedAt(post.getUpdatedAt())
                         .likeCount(postLikeRepository.countByPostId(post.getId()))
                         .commentCount(commentRepository.countByPostId(post.getId()))
-                        .liked(postLikeRepository.findByUserIdAndPostId(user.getId(), post.getId()).isPresent())
+                        .liked(postLikeRepository.existsByUserIdAndPostId(user.getId(), post.getId()))
                         .writer(mapToWriterDto(post.getUserId()))//작성자 추가
                         .build())
                 .collect(Collectors.toList());
