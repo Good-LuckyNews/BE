@@ -37,7 +37,7 @@ public class EveryDayArticleCrawler {
     private final ArticleService articleService;
     private final HeartService heartService;
     private final CompletedTimeService completedTimeService;
-    @Scheduled(cron = "0 0 3 * * ?")  // 매일 오전 3시
+    //@Scheduled(cron = "0 0 3 * * ?")  // 매일 오전 3시 현재 꺼둠
     public void fetchAndSaveNewsDaily() {
         List<String> keywords = Arrays.asList("감동적", "선행", "기부", "행복", "봉사활동", "따뜻한", "치유", "웰빙", "선한 영향력", "기여", "혁신", "성과", "영웅", "향상");
 
