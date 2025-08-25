@@ -120,7 +120,7 @@ public class PostService {
                         SuccessStatus.POST_DETAIL_SUCCESS.getMessage(),
                         postDto
                 ));
-    }
+    }//상세 정보 조회
 
 
     public ResponseEntity<?> getAllPosts(int page, int size, String email) {
