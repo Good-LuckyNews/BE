@@ -13,42 +13,30 @@ public class NewsScraper {
         try {
             Document doc = Jsoup.connect(originalLink).get();
 
-            // figure 태그 내의 이미지 가져오기: 가장 큰 이미지를 찾기
-            String image = "";
-            Elements imgElements = doc.select("figure img"); // figure 태그 내의 img 태그 선택
-            if (!imgElements.isEmpty()) {
-                image = imgElements.stream()
-                        .map(img -> img.absUrl("src")) // absUrl을 사용하여 상대경로를 절대경로로 변환
-                        .max((src1, src2) -> Integer.compare(src1.length(), src2.length()))  // 가장 큰 이미지 선택
-                        .orElse("");
-                log.info("가장 큰 이미지 URL: {}", image);
-            }
+            // 본문만 선택 (네이버 뉴스 기준, 다른 언론사는 추가 selector 필요)-> 클로링 안될 수도 있음
+            Element contentElement = doc.selectFirst("div#newsct_article, div#articeBody, div.article_body");
 
-            // 본문 내용 가져오기: 모든 태그 중 텍스트가 가장 긴 것을 추출
             String longContent = "";
-            Elements allElements = doc.select("*");  // 모든 태그를 선택
-            for (Element element : allElements) {
-                Elements links = element.select("a"); // 현재 요소 내 a 태그 선택
-                for (Element link : links) {
-                    link.remove(); // a 태그 자체를 제거하여 내부 텍스트를 포함하지 않도록 함
-                }
+            if (contentElement != null) {
+                // 불필요한 요소 제거 (댓글, 광고, 스크립트 등)
+                contentElement.select("script, style, iframe, .u_cbox, #comment, .comment_area, .reply, .sns_area").remove();
 
-                String text = element.text(); // a 태그 제거 후 텍스트 가져오기
-                if (text.length() > longContent.length()) {
-                    longContent = text;
-                }
-            }
-
-            if (!longContent.isEmpty()) {
-                log.info("가장 긴 본문 내용 추출 성공");
+                longContent = contentElement.text();
+                log.info("본문 추출 성공 (길이: {})", longContent.length());
             } else {
-                log.warn("본문 내용이 포함된 요소를 찾을 수 없습니다.");
+                log.warn("본문 영역을 찾지 못함 → fallback 로직 실행");
+                longContent = doc.body().text(); // fallback: 페이지 전체 텍스트
             }
 
-            // 줄바꿈(\n)을 <br> 태그로 변환
-            longContent = longContent.replace("\n", "<br>");
+            // 이미지 추출
+            String image = "";
+            Elements imgElements = doc.select("figure img, div#newsct_article img, div#articeBody img");
+            if (!imgElements.isEmpty()) {
+                image = imgElements.first().absUrl("src");
+                log.info("대표 이미지 추출 성공 : {}", image);
+            }
 
-            return new ArticleContent(image, longContent);
+            return new ArticleContent(image, longContent.replace("\n", "<br>"));
         } catch (IOException e) {
             log.error("기사 크롤링 실패: {}", e.getMessage(), e);
             return new ArticleContent("", "");

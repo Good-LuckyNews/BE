@@ -32,7 +32,6 @@ public class ArticleService {
     private final MemberRepository memberRepository;
     private final ArticleRepository articleRepository;
     private final HeartRepository heartRepository;
-    private final CompletedTimeRepository completedTimeRepository;
     private final ArticleConverter articleConverter;
 
     @Transactional
