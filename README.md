@@ -45,8 +45,7 @@
 
 | 장서원 | 김채원 | 
 |--------|--------|
-| <img width="396" height="391" alt="image" src="https://github.com/user-attachments/assets/6e6c6466-e077-4089-bc5b-69b47332da7a" />
- | <img width="396" height="391" alt="image" src="https://github.com/user-attachments/assets/61d388ce-1b35-4521-b9ce-43ba91e5e35f" />| 
+| <img width="396" height="391" alt="image" src="https://github.com/user-attachments/assets/6e6c6466-e077-4089-bc5b-69b47332da7a" /> | <img width="396" height="391" alt="image" src="https://github.com/user-attachments/assets/61d388ce-1b35-4521-b9ce-43ba91e5e35f" />| 
 | [@oculo0204](https://github.com/oculo0204) | [@wonee1](https://github.com/wonee1) |
 | 로그인/회원가입, 회원 정보, 희소식, 댓글, 기사, 서버 배포 | 플레이스, 희소식, 댓글 기능 및 서버 배포| 
 
