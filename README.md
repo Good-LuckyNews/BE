@@ -55,19 +55,20 @@
 
 - **Backend**  
   - Java 17  
-  - Spring Boot 3.4.7  
-  - Gradle 8.14.2  
-  - Hibernate ORM 6.0.2  
+  - Spring Boot 3.4.2 
+  - Gradle 8.12.1
+  - Hibernate ORM (Spring Data JPA 기본 포함)
 
 - **Database**  
   - MariaDB 3.3.3 (JDBC 드라이버)  
 
 - **보안 및 인증**  
   - Spring Security  
-  - JWT (jjwt 라이브러리)  
+  - JWT (jjwt 라이브러리)
+  - OAuth2 Client
 
 - **API 문서화**  
-  - Notion
+  - [Notion](https://stitch-risk-47e.notion.site/API-197d766395938077b3dbcca0435aad62?source=copy_link)
 
 - **UI 템플릿**  
   - Thymeleaf + Spring Security  
@@ -79,7 +80,7 @@
   - GitHub Actions  
 
 - **주요 라이브러리**  
-  - Lombok, Jsoup
+  - Lombok, Jsoup, OkHttp
   - 
 - **Gradle 설정**  
   - `java`, `org.springframework.boot`, `io.spring.dependency-management` 플러그인 적용  
