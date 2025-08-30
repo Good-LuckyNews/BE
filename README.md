@@ -89,6 +89,43 @@
 
 ## 📂 프로젝트 구조  
 ```
+src
+├── main
+│   ├── java/com/draconist/goodluckynews
+│   │   ├── domain
+│   │   │   └── article
+│   │   │         └── controller
+│   │   │         └── converter
+│   │   │         └── dto
+│   │   │         └── entity
+│   │   │         └── repository
+│   │   │         └── service
+│   │   │   ├── FcmToken
+│   │   │   ├── goodNews
+│   │   │   ├── member
+│   │   │   └── place
+│   │   │
+│   │   ├── global
+│   │   │   ├── awss3
+│   │   │   ├── config
+│   │   │   ├── entity
+│   │   │   ├── enums/statuscode
+│   │   │   ├── exception
+│   │   │   ├── firebase
+│   │   │   ├── jwt
+│   │   │   └── response
+│   │   │
+│   │   └── GoodluckynewsApplication.java
+│   │
+│   └── resources
+│       ├── application.yml
+│       └── ...
+│
+└── test
+    ├── java
+    ├── resources
+    └── testassets
+
 ```
 
 
@@ -150,3 +187,4 @@
 # 💙서비스 아키텍처
 
 # erd
+<img width="1900" height="1112" alt="Copy of GoodNews" src="https://github.com/user-attachments/assets/127eebe5-4f79-4ede-afdc-a22dae80aa50" />
