@@ -185,6 +185,7 @@ src
 [test]	테스트 코드 추가 시 사용 </br>
 
 # 💙서비스 아키텍처
+<img width="641" height="689" alt="서비스 아키텍처 drawio" src="https://github.com/user-attachments/assets/881915a0-031c-4f66-a6e3-d22d3f45b810" />
 
 # erd
 <img width="1900" height="1112" alt="Copy of GoodNews" src="https://github.com/user-attachments/assets/127eebe5-4f79-4ede-afdc-a22dae80aa50" />
